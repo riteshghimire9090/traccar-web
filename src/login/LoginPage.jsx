@@ -10,6 +10,8 @@ import {
   Alert,
   IconButton,
   Tooltip,
+  Typography,
+  Divider,
 } from '@mui/material';
 import CountryFlag from 'react-country-flag';
 import { makeStyles } from 'tss-react/mui';
@@ -29,6 +31,7 @@ import {
   nativePostMessage,
 } from '../common/components/NativeInterface';
 import LogoImage from './LogoImage';
+import GoogleIcon from './GoogleIcon';
 import { useCatch } from '../reactHelper';
 import QrCodeDialog from '../common/components/QrCodeDialog';
 import PasswordField from '../common/components/PasswordField';
@@ -46,6 +49,20 @@ const useStyles = makeStyles()((theme) => ({
     display: 'flex',
     flexDirection: 'column',
     gap: theme.spacing(2),
+  },
+  title: {
+    fontWeight: 700,
+    marginBottom: theme.spacing(1),
+  },
+  googleButton: {
+    borderColor: theme.palette.divider,
+    color: theme.palette.text.primary,
+    backgroundColor: theme.palette.background.paper,
+    gap: theme.spacing(1),
+    '&:hover': {
+      backgroundColor: theme.palette.action.hover,
+      borderColor: theme.palette.divider,
+    },
   },
   extraContainer: {
     display: 'flex',
@@ -201,11 +218,26 @@ const LoginPage = () => {
         {useMediaQuery(theme.breakpoints.down('lg')) && (
           <LogoImage color={theme.palette.primary.main} />
         )}
+        <Typography variant="h5" className={classes.title}>
+          {t('loginTitle')}
+        </Typography>
         {!!announcement && !announcementShown && (
           <Alert severity="info" onClose={() => setAnnouncementShown(true)}>
             {announcement}
           </Alert>
         )}
+        {openIdEnabled && (
+          <Button
+            onClick={() => handleOpenIdLogin()}
+            variant="outlined"
+            className={classes.googleButton}
+            startIcon={<GoogleIcon />}
+            fullWidth
+          >
+            {t('loginOpenId')}
+          </Button>
+        )}
+        {openIdEnabled && !openIdForced && <Divider>{t('loginOr')}</Divider>}
         {!openIdForced && (
           <>
             <TextField
@@ -250,11 +282,6 @@ const LoginPage = () => {
               {t('loginLogin')}
             </Button>
           </>
-        )}
-        {openIdEnabled && (
-          <Button onClick={() => handleOpenIdLogin()} variant="contained" color="secondary">
-            {t('loginOpenId')}
-          </Button>
         )}
         {!openIdForced && (
           <div className={classes.extraContainer}>

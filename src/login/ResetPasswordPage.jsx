@@ -20,12 +20,11 @@ const useStyles = makeStyles()((theme) => ({
   header: {
     display: 'flex',
     alignItems: 'center',
+    gap: theme.spacing(1),
+    marginBottom: theme.spacing(1),
   },
   title: {
-    fontSize: theme.spacing(3),
-    fontWeight: 500,
-    marginLeft: theme.spacing(1),
-    textTransform: 'uppercase',
+    fontWeight: 700,
   },
 }));
 
@@ -72,7 +71,7 @@ const ResetPasswordPage = () => {
           <IconButton color="primary" onClick={() => navigate('/login')}>
             <BackIcon />
           </IconButton>
-          <Typography className={classes.title} color="primary">
+          <Typography variant="h5" className={classes.title}>
             {t('loginReset')}
           </Typography>
         </div>
