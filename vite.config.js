@@ -8,8 +8,15 @@ export default defineConfig(() => ({
   server: {
     port: 3000,
     proxy: {
-      '/api/socket': 'ws://localhost:8082',
-      '/api': 'http://localhost:8082',
+      '/api/socket': {
+        target: 'wss://gps.precisetechnology.com.np',
+        ws: true,
+        changeOrigin: true,
+      },
+      '/api': {
+        target: 'https://gps.precisetechnology.com.np',
+        changeOrigin: true,
+      },
     },
   },
   build: {
