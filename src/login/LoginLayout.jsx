@@ -7,12 +7,13 @@ const useStyles = makeStyles()((theme) => ({
   root: {
     display: 'flex',
     height: '100%',
+    background: theme.palette.background.default,
   },
   sidebar: {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    background: theme.palette.primary.main,
+    background: `linear-gradient(145deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
     paddingBottom: theme.spacing(5),
     width: theme.dimensions.sidebarWidth,
     [theme.breakpoints.down('lg')]: {
@@ -28,13 +29,23 @@ const useStyles = makeStyles()((theme) => ({
     justifyContent: 'center',
     alignItems: 'center',
     flex: 1,
-    boxShadow: '-2px 0px 16px rgba(0, 0, 0, 0.25)',
     [theme.breakpoints.up('lg')]: {
       padding: theme.spacing(0, 25, 0, 0),
     },
   },
+  card: {
+    display: 'flex',
+    flexDirection: 'column',
+    maxWidth: theme.spacing(58),
+    width: '100%',
+    margin: theme.spacing(0, 3),
+    borderRadius: 20,
+    boxShadow: theme.shadows[8],
+    [theme.breakpoints.up('sm')]: {
+      border: `1px solid ${theme.palette.divider}`,
+    },
+  },
   form: {
-    maxWidth: theme.spacing(52),
     padding: theme.spacing(5),
     width: '100%',
   },
@@ -51,9 +62,11 @@ const LoginLayout = ({ children }) => {
           <LogoImage color={theme.palette.secondary.contrastText} />
         )}
       </div>
-      <Paper className={classes.paper}>
-        <form className={classes.form}>{children}</form>
-      </Paper>
+      <div className={classes.paper}>
+        <Paper className={classes.card}>
+          <form className={classes.form}>{children}</form>
+        </Paper>
+      </div>
     </main>
   );
 };

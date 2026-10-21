@@ -31,6 +31,7 @@ const useStyles = makeStyles()((theme) => ({
       height: `calc(100% - ${theme.spacing(3)})`,
       width: theme.dimensions.drawerWidthDesktop,
       margin: theme.spacing(1.5),
+      gap: theme.spacing(1.5),
       zIndex: 3,
     },
     [theme.breakpoints.down('md')]: {
@@ -61,6 +62,7 @@ const useStyles = makeStyles()((theme) => ({
     zIndex: 4,
     display: 'flex',
     minHeight: 0,
+    overflow: 'hidden',
   },
 }));
 
@@ -124,7 +126,7 @@ const MainPage = () => {
         </Suspense>
       )}
       <div className={classes.sidebar}>
-        <Paper square elevation={3} className={classes.header}>
+        <Paper square={!desktop} elevation={3} className={classes.header}>
           <MainToolbar
             filteredDevices={filteredDevices}
             devicesOpen={devicesOpen}
@@ -152,7 +154,8 @@ const MainPage = () => {
             </div>
           )}
           <Paper
-            square
+            square={!desktop}
+            elevation={desktop ? 3 : 0}
             className={classes.contentList}
             style={devicesOpen ? {} : { visibility: 'hidden' }}
           >
