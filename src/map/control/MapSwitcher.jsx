@@ -1,14 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  useTheme,
-  Menu,
-  MenuItem,
-  ListItemIcon,
-  ListItemText,
-  Switch,
-  Divider,
-} from '@mui/material';
+import { useTheme, Popover, Typography } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
 import { createRoot } from 'react-dom/client';
 import LayersIcon from '@mui/icons-material/Layers';
@@ -40,7 +32,7 @@ const applyVisibility = (hidden) => {
   });
 };
 
-const useStyles = makeStyles()(() => ({
+const useStyles = makeStyles()((theme) => ({
   button: {
     '&&': {
       display: 'flex',
@@ -48,6 +40,87 @@ const useStyles = makeStyles()(() => ({
       justifyContent: 'center',
       color: '#333',
     },
+  },
+  panel: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(2),
+    padding: theme.spacing(2),
+    width: theme.spacing(36),
+  },
+  section: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(1),
+  },
+  sectionLabel: {
+    fontSize: 12,
+    fontWeight: 500,
+  },
+  displayGrid: {
+    display: 'flex',
+    gap: theme.spacing(1.5),
+    backgroundColor: '#f5f5f7',
+    borderRadius: theme.shape.borderRadius,
+    padding: theme.spacing(1.5),
+  },
+  displayItem: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: theme.spacing(0.5),
+    border: 'none',
+    background: 'none',
+    cursor: 'pointer',
+  },
+  displayIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: '50%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: theme.palette.background.paper,
+    color: theme.palette.text.disabled,
+  },
+  displayIconActive: {
+    backgroundColor: theme.palette.secondary.main,
+    color: theme.palette.secondary.contrastText,
+  },
+  displayLabel: {
+    fontSize: 10,
+    textAlign: 'center',
+    color: theme.palette.text.secondary,
+  },
+  displayLabelActive: {
+    color: theme.palette.secondary.main,
+  },
+  styleRow: {
+    display: 'flex',
+    alignItems: 'center',
+    height: 32,
+    padding: theme.spacing(0, 1),
+    borderRadius: 6,
+    border: 'none',
+    cursor: 'pointer',
+    backgroundColor: '#f0f1f5',
+    color: theme.palette.text.primary,
+    fontSize: 14,
+  },
+  styleRowActive: {
+    backgroundColor: theme.palette.secondary.main,
+    color: theme.palette.secondary.contrastText,
+  },
+  footer: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1),
+    height: 40,
+    border: 'none',
+    background: 'none',
+    cursor: 'pointer',
+    color: theme.palette.text.primary,
   },
 }));
 
@@ -102,54 +175,76 @@ const MapSwitcher = ({ styles, selectedId, onSelect }) => {
   }, [theme.direction, classes.button, cx]);
 
   return (
-    <Menu
+    <Popover
       anchorEl={anchorEl}
       open={Boolean(anchorEl)}
       onClose={() => setAnchorEl(null)}
       anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       transformOrigin={{ vertical: 'top', horizontal: 'right' }}
     >
-      {styles.map((style) => (
-        <MenuItem
-          key={style.id}
-          selected={style.id === selectedId}
+      <div className={classes.panel}>
+        {titles.length > 0 && (
+          <div className={classes.section}>
+            <Typography className={classes.sectionLabel}>{t('mapDisplay')}</Typography>
+            <div className={classes.displayGrid}>
+              {titles.map((title) => {
+                const active = !hidden.includes(title);
+                return (
+                  <button
+                    key={title}
+                    type="button"
+                    className={classes.displayItem}
+                    onClick={() =>
+                      setHidden((previous) =>
+                        previous.includes(title)
+                          ? previous.filter((value) => value !== title)
+                          : [...previous, title],
+                      )
+                    }
+                  >
+                    <span className={cx(classes.displayIcon, active && classes.displayIconActive)}>
+                      <LayersIcon fontSize="small" />
+                    </span>
+                    <span
+                      className={cx(classes.displayLabel, active && classes.displayLabelActive)}
+                    >
+                      {title}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+        <div className={classes.section}>
+          <Typography className={classes.sectionLabel}>{t('mapSelection')}</Typography>
+          {styles.map((style) => (
+            <button
+              key={style.id}
+              type="button"
+              className={cx(classes.styleRow, style.id === selectedId && classes.styleRowActive)}
+              onClick={() => {
+                onSelect(style.id);
+                setAnchorEl(null);
+              }}
+            >
+              {style.title}
+            </button>
+          ))}
+        </div>
+        <button
+          type="button"
+          className={classes.footer}
           onClick={() => {
-            onSelect(style.id);
             setAnchorEl(null);
+            navigate('/settings/preferences');
           }}
         >
-          {style.title}
-        </MenuItem>
-      ))}
-      {titles.length > 0 && <Divider />}
-      {titles.map((title) => (
-        <MenuItem
-          key={title}
-          onClick={() =>
-            setHidden((previous) =>
-              previous.includes(title)
-                ? previous.filter((value) => value !== title)
-                : [...previous, title],
-            )
-          }
-        >
-          <ListItemText>{title}</ListItemText>
-          <Switch edge="end" size="small" checked={!hidden.includes(title)} onChange={() => {}} />
-        </MenuItem>
-      ))}
-      <Divider />
-      <MenuItem
-        onClick={() => {
-          setAnchorEl(null);
-          navigate('/settings/preferences');
-        }}
-      >
-        <ListItemIcon>
           <TuneIcon fontSize="small" />
-        </ListItemIcon>
-        <ListItemText>{t('sharedPreferences')}</ListItemText>
-      </MenuItem>
-    </Menu>
+          <Typography>{t('sharedPreferences')}</Typography>
+        </button>
+      </div>
+    </Popover>
   );
 };
 
