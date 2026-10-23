@@ -1,0 +1,15 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Webcam" clip-path="url(#clip0_0_186)">
+<g id="Vector">
+</g>
+<path id="Vector_2" d="M25 13C25 17.9706 20.9706 22 16 22C11.0294 22 7 17.9706 7 13C7 8.02944 11.0294 4 16 4C20.9706 4 25 8.02944 25 13Z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor"/>
+<path id="Vector_3" d="M20 13C20 15.2091 18.2091 17 16 17C13.7909 17 12 15.2091 12 13C12 10.7909 13.7909 9 16 9C18.2091 9 20 10.7909 20 13Z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor"/>
+<path id="Vector_4" d="M16 22V26" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor"/>
+<path id="Vector_5" d="M4 26H28" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" stroke="currentColor"/>
+</g>
+<defs>
+<clipPath id="clip0_0_186">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>

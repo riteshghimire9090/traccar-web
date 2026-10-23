@@ -5,7 +5,8 @@ import { useTheme } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useDispatch, useSelector } from 'react-redux';
 import DeviceList from './DeviceList';
-import BottomMenu from '../common/components/BottomMenu';
+import NavRail from './NavRail';
+import ProfileMenu from './ProfileMenu';
 import StatusCard from '../common/components/StatusCard';
 import { devicesActions } from '../store';
 import usePersistedState from '../common/util/usePersistedState';
@@ -20,13 +21,29 @@ const useStyles = makeStyles()((theme) => ({
   root: {
     height: '100%',
   },
+  navRail: {
+    pointerEvents: 'auto',
+    position: 'fixed',
+    left: 0,
+    top: 0,
+    height: '100%',
+    width: theme.dimensions.navRailWidth,
+    zIndex: 4,
+  },
+  profileMenu: {
+    pointerEvents: 'auto',
+    position: 'fixed',
+    top: 24,
+    [theme.direction === 'rtl' ? 'left' : 'right']: 24,
+    zIndex: 4,
+  },
   sidebar: {
     pointerEvents: 'none',
     display: 'flex',
     flexDirection: 'column',
     [theme.breakpoints.up('md')]: {
       position: 'fixed',
-      left: 0,
+      left: theme.dimensions.navRailWidth,
       top: 0,
       height: `calc(100% - ${theme.spacing(3)})`,
       width: theme.dimensions.drawerWidthDesktop,
@@ -42,10 +59,6 @@ const useStyles = makeStyles()((theme) => ({
   header: {
     pointerEvents: 'auto',
     zIndex: 6,
-  },
-  footer: {
-    pointerEvents: 'auto',
-    zIndex: 5,
   },
   middle: {
     flex: 1,
@@ -125,6 +138,16 @@ const MainPage = () => {
           />
         </Suspense>
       )}
+      {desktop && (
+        <div className={classes.navRail}>
+          <NavRail />
+        </div>
+      )}
+      {desktop && (
+        <div className={classes.profileMenu}>
+          <ProfileMenu />
+        </div>
+      )}
       <div className={classes.sidebar}>
         <Paper square={!desktop} elevation={3} className={classes.header}>
           <MainToolbar
@@ -162,11 +185,6 @@ const MainPage = () => {
             <DeviceList devices={filteredDevices} />
           </Paper>
         </div>
-        {desktop && (
-          <div className={classes.footer}>
-            <BottomMenu />
-          </div>
-        )}
       </div>
       <EventsDrawer open={eventsOpen} onClose={() => setEventsOpen(false)} />
       {selectedDeviceId && (
@@ -174,7 +192,7 @@ const MainPage = () => {
           deviceId={selectedDeviceId}
           position={selectedPosition}
           onClose={() => dispatch(devicesActions.selectId(null))}
-          desktopPadding={theme.dimensions.drawerWidthDesktop}
+          desktopPadding={`calc(${theme.dimensions.navRailWidth} + ${theme.dimensions.drawerWidthDesktop})`}
         />
       )}
     </div>

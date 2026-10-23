@@ -1,0 +1,90 @@
+/* Reskins MapLibre's native controls to match the floating white rounded-square
+   buttons from the Figma design, since they're DOM elements MapLibre creates
+   outside React and can't be styled with the app's CSS-in-JS system. The app
+   mirrors these controls to the left corners in RTL locales, so every rule
+   below is duplicated for both sides. */
+
+.maplibregl-ctrl-top-right,
+.maplibregl-ctrl-top-left {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+/* Desktop reserves extra top space for the floating profile pill (main map page only) */
+@media (min-width: 900px) {
+  .maplibregl-ctrl-top-right,
+  .maplibregl-ctrl-top-left {
+    margin-top: 88px;
+  }
+}
+
+.maplibregl-ctrl-top-right {
+  margin-right: 24px;
+}
+
+.maplibregl-ctrl-top-left {
+  margin-left: 24px;
+}
+
+.maplibregl-ctrl-bottom-right,
+.maplibregl-ctrl-bottom-left {
+  margin-bottom: 24px;
+}
+
+.maplibregl-ctrl-bottom-right {
+  margin-right: 24px;
+}
+
+.maplibregl-ctrl-bottom-left {
+  margin-left: 24px;
+}
+
+.maplibregl-ctrl-top-right .maplibregl-ctrl-group,
+.maplibregl-ctrl-top-left .maplibregl-ctrl-group,
+.maplibregl-ctrl-bottom-right .maplibregl-ctrl-group,
+.maplibregl-ctrl-bottom-left .maplibregl-ctrl-group {
+  display: flex;
+  flex-direction: column;
+  background: none;
+  box-shadow: none;
+  border-radius: 0;
+  margin: 0;
+}
+
+.maplibregl-ctrl-top-right .maplibregl-ctrl-group,
+.maplibregl-ctrl-top-left .maplibregl-ctrl-group {
+  gap: 12px;
+}
+
+.maplibregl-ctrl-bottom-right .maplibregl-ctrl-group,
+.maplibregl-ctrl-bottom-left .maplibregl-ctrl-group {
+  gap: 8px;
+}
+
+.maplibregl-ctrl-top-right button:not(.maplibregl-ctrl-attrib-button),
+.maplibregl-ctrl-top-left button:not(.maplibregl-ctrl-attrib-button),
+.maplibregl-ctrl-bottom-right button:not(.maplibregl-ctrl-attrib-button),
+.maplibregl-ctrl-bottom-left button:not(.maplibregl-ctrl-attrib-button) {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  background-color: #fff;
+  box-shadow:
+    0px 0px 2px 0px rgba(0, 0, 0, 0.12),
+    0px 2px 4px 0px rgba(0, 0, 0, 0.08);
+}
+
+.maplibregl-ctrl-bottom-right button:not(.maplibregl-ctrl-attrib-button),
+.maplibregl-ctrl-bottom-left button:not(.maplibregl-ctrl-attrib-button) {
+  width: 44px;
+  height: 44px;
+}
+
+.maplibregl-ctrl-top-right button + button,
+.maplibregl-ctrl-top-left button + button,
+.maplibregl-ctrl-bottom-right button + button,
+.maplibregl-ctrl-bottom-left button + button {
+  border-top: none;
+}

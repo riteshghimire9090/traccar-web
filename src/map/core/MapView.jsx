@@ -1,4 +1,5 @@
 import 'maplibre-gl/dist/maplibre-gl.css';
+import './mapControls.css';
 import * as maplibregl from 'maplibre-gl';
 import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import { googleProtocol } from 'maplibre-google-maps';
@@ -99,9 +100,9 @@ const MapView = ({ children }) => {
 
   useEffect(() => {
     const attribution = new maplibregl.AttributionControl({ compact: true });
-    const navigation = new maplibregl.NavigationControl();
+    const navigation = new maplibregl.NavigationControl({ showCompass: false });
     map.addControl(attribution, theme.direction === 'rtl' ? 'bottom-left' : 'bottom-right');
-    map.addControl(navigation, theme.direction === 'rtl' ? 'top-left' : 'top-right');
+    map.addControl(navigation, theme.direction === 'rtl' ? 'bottom-left' : 'bottom-right');
     return () => {
       map.removeControl(navigation);
       map.removeControl(attribution);
