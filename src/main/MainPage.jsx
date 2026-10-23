@@ -60,6 +60,11 @@ const useStyles = makeStyles()((theme) => ({
     pointerEvents: 'auto',
     zIndex: 6,
   },
+  headerCollapsed: {
+    width: 'fit-content',
+    backgroundColor: 'transparent',
+    boxShadow: 'none',
+  },
   middle: {
     flex: 1,
     display: 'grid',
@@ -80,7 +85,7 @@ const useStyles = makeStyles()((theme) => ({
 }));
 
 const MainPage = () => {
-  const { classes } = useStyles();
+  const { classes, cx } = useStyles();
   const dispatch = useDispatch();
   const theme = useTheme();
 
@@ -149,7 +154,11 @@ const MainPage = () => {
         </div>
       )}
       <div className={classes.sidebar}>
-        <Paper square={!desktop} elevation={3} className={classes.header}>
+        <Paper
+          square={!desktop}
+          elevation={3}
+          className={cx(classes.header, !devicesOpen && classes.headerCollapsed)}
+        >
           <MainToolbar
             filteredDevices={filteredDevices}
             devicesOpen={devicesOpen}

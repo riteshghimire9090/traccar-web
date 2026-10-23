@@ -22,7 +22,6 @@ import {
 } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
 import { useTheme } from '@mui/material/styles';
-import DnsIcon from '@mui/icons-material/Dns';
 import AddIcon from '@mui/icons-material/Add';
 import TuneIcon from '@mui/icons-material/Tune';
 import { useTranslation } from '../common/components/LocalizationProvider';
@@ -31,6 +30,7 @@ import DeviceRow from './DeviceRow';
 import DeviceFilterPanel from './DeviceFilterPanel';
 import CloseIcon from '../resources/images/nav/close-x.svg?react';
 import MagnifyingGlassIcon from '../resources/images/nav/magnifying-glass.svg?react';
+import ArrowsOutIcon from '../resources/images/nav/arrows-out.svg?react';
 
 const useStyles = makeStyles()((theme) => ({
   header: {
@@ -59,6 +59,19 @@ const useStyles = makeStyles()((theme) => ({
     padding: theme.spacing(2),
     gap: theme.spacing(2),
     width: theme.dimensions.drawerWidthTablet,
+  },
+  collapsedButton: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1.5),
+    border: 'none',
+    cursor: 'pointer',
+    padding: theme.spacing(1.25),
+    borderRadius: 999,
+    backgroundColor: theme.palette.background.paper,
+    boxShadow: '0px 0px 2px 0px rgba(0, 0, 0, 0.12), 0px 2px 4px 0px rgba(0, 0, 0, 0.08)',
+    color: theme.palette.text.primary,
+    fontSize: 16,
   },
 }));
 
@@ -91,14 +104,25 @@ const MainToolbar = ({
   const [filterAnchorEl, setFilterAnchorEl] = useState(null);
   const [devicesAnchorEl, setDevicesAnchorEl] = useState(null);
 
+  if (!devicesOpen) {
+    return (
+      <button
+        type="button"
+        className={classes.collapsedButton}
+        onClick={() => setDevicesOpen(true)}
+      >
+        {t('sharedViewDevice')}
+        <ArrowsOutIcon />
+      </button>
+    );
+  }
+
   return (
     <>
       <div className={classes.header}>
-        <Typography className={classes.title}>
-          {devicesOpen ? t('sharedViewDevice') : t('deviceTitle')}
-        </Typography>
-        <IconButton edge="end" onClick={() => setDevicesOpen(!devicesOpen)}>
-          {devicesOpen ? <CloseIcon width={20} height={20} /> : <DnsIcon fontSize="small" />}
+        <Typography className={classes.title}>{t('sharedViewDevice')}</Typography>
+        <IconButton edge="end" onClick={() => setDevicesOpen(false)}>
+          <CloseIcon width={20} height={20} />
         </IconButton>
       </div>
       <Toolbar ref={toolbarRef} className={classes.toolbar}>
@@ -201,15 +225,13 @@ const MainToolbar = ({
           </div>
         </Popover>
       </Toolbar>
-      {devicesOpen && (
-        <DeviceFilterPanel
-          filter={filter}
-          setFilter={setFilter}
-          filterSort={filterSort}
-          setFilterSort={setFilterSort}
-          devices={devices}
-        />
-      )}
+      <DeviceFilterPanel
+        filter={filter}
+        setFilter={setFilter}
+        filterSort={filterSort}
+        setFilterSort={setFilterSort}
+        devices={devices}
+      />
     </>
   );
 };
