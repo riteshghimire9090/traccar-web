@@ -17,7 +17,11 @@ const PasswordField = ({ slotProps, ...others }) => {
           endAdornment: (
             <InputAdornment position="end">
               <IconButton onClick={() => setShowPassword(!showPassword)} edge="end" size="small">
-                {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                {showPassword ? (
+                  <VisibilityOffIcon fontSize="small" />
+                ) : (
+                  <VisibilityIcon fontSize="small" />
+                )}
               </IconButton>
             </InputAdornment>
           ),

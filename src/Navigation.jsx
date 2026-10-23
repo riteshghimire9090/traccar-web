@@ -9,6 +9,7 @@ import { devicesActions } from './store';
 import { generateLoginToken } from './common/components/NativeInterface';
 import { useLocalization } from './common/components/LocalizationProvider';
 import fetchOrThrow from './common/util/fetchOrThrow';
+import LoginThemeProvider from './login/LoginThemeProvider';
 
 const CombinedReportPage = lazy(() => import('./reports/CombinedReportPage'));
 const PositionsReportPage = lazy(() => import('./reports/PositionsReportPage'));
@@ -123,9 +124,30 @@ const Navigation = () => {
   return (
     <Suspense fallback={<Loader />}>
       <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route
+          path="/login"
+          element={
+            <LoginThemeProvider>
+              <LoginPage />
+            </LoginThemeProvider>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <LoginThemeProvider>
+              <RegisterPage />
+            </LoginThemeProvider>
+          }
+        />
+        <Route
+          path="/reset-password"
+          element={
+            <LoginThemeProvider>
+              <ResetPasswordPage />
+            </LoginThemeProvider>
+          }
+        />
         <Route path="/change-server" element={<ChangeServerPage />} />
         <Route path="/" element={<App />}>
           <Route index element={<MainPage />} />

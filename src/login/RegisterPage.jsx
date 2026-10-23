@@ -1,30 +1,27 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Button, TextField, Typography, IconButton } from '@mui/material';
+import { Button } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
 import { useNavigate } from 'react-router-dom';
 import LoginLayout from './LoginLayout';
 import { useTranslation } from '../common/components/LocalizationProvider';
 import { useCatch, useAsyncTask } from '../reactHelper';
 import { messagesActions, sessionActions } from '../store';
-import BackIcon from '../common/components/BackIcon';
-import PasswordField from '../common/components/PasswordField';
+import LoginField from './LoginField';
+import LanguageSelector from './LanguageSelector';
+import AuthHeading from './AuthHeading';
+import AuthPrompt from './AuthPrompt';
+import heroIllustration from '../resources/images/login/hero-illustration-desktop.jpg';
 import fetchOrThrow from '../common/util/fetchOrThrow';
 
 const useStyles = makeStyles()((theme) => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
-    gap: theme.spacing(2),
+    gap: theme.spacing(2.5),
   },
-  header: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(1),
-    marginBottom: theme.spacing(1),
-  },
-  title: {
-    fontWeight: 700,
+  submit: {
+    height: 56,
   },
 }));
 
@@ -65,19 +62,10 @@ const RegisterPage = () => {
   });
 
   return (
-    <LoginLayout>
+    <LoginLayout headerEnd={<LanguageSelector />} heroIllustration={heroIllustration}>
       <div className={classes.container}>
-        <div className={classes.header}>
-          {!server.newServer && (
-            <IconButton color="primary" onClick={() => navigate('/login')}>
-              <BackIcon />
-            </IconButton>
-          )}
-          <Typography variant="h5" className={classes.title}>
-            {t('loginRegister')}
-          </Typography>
-        </div>
-        <TextField
+        <AuthHeading subtitle={t('loginRegisterSubtitle')} />
+        <LoginField
           required
           label={t('sharedName')}
           name="name"
@@ -86,7 +74,7 @@ const RegisterPage = () => {
           autoFocus
           onChange={(event) => setName(event.target.value)}
         />
-        <TextField
+        <LoginField
           required
           type="email"
           label={t('userEmail')}
@@ -95,8 +83,9 @@ const RegisterPage = () => {
           autoComplete="email"
           onChange={(event) => setEmail(event.target.value)}
         />
-        <PasswordField
+        <LoginField
           required
+          secret
           label={t('userPassword')}
           name="password"
           value={password}
@@ -104,7 +93,7 @@ const RegisterPage = () => {
           onChange={(event) => setPassword(event.target.value)}
         />
         {totpForce && (
-          <TextField
+          <LoginField
             required
             label={t('loginTotpKey')}
             name="totpKey"
@@ -116,7 +105,8 @@ const RegisterPage = () => {
         )}
         <Button
           variant="contained"
-          color="secondary"
+          color="primary"
+          className={classes.submit}
           onClick={handleSubmit}
           type="submit"
           disabled={!name || !password || !(server.newServer || /(.+)@(.+)\.(.{2,})/.test(email))}
@@ -124,6 +114,13 @@ const RegisterPage = () => {
         >
           {t('loginRegister')}
         </Button>
+        {!server.newServer && (
+          <AuthPrompt
+            prompt={t('loginHaveAccount')}
+            actionLabel={t('loginSignIn')}
+            onAction={() => navigate('/login')}
+          />
+        )}
       </div>
     </LoginLayout>
   );

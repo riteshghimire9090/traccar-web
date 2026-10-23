@@ -1,30 +1,27 @@
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { Button, TextField, Typography, IconButton } from '@mui/material';
+import { Button } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import LoginLayout from './LoginLayout';
 import { useTranslation } from '../common/components/LocalizationProvider';
 import { messagesActions } from '../store';
 import { useCatch } from '../reactHelper';
-import BackIcon from '../common/components/BackIcon';
-import PasswordField from '../common/components/PasswordField';
+import LoginField from './LoginField';
+import LanguageSelector from './LanguageSelector';
+import AuthHeading from './AuthHeading';
+import AuthPrompt from './AuthPrompt';
+import heroIllustration from '../resources/images/login/hero-illustration-desktop.jpg';
 import fetchOrThrow from '../common/util/fetchOrThrow';
 
 const useStyles = makeStyles()((theme) => ({
   container: {
     display: 'flex',
     flexDirection: 'column',
-    gap: theme.spacing(2),
+    gap: theme.spacing(2.5),
   },
-  header: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(1),
-    marginBottom: theme.spacing(1),
-  },
-  title: {
-    fontWeight: 700,
+  submit: {
+    height: 56,
   },
 }));
 
@@ -65,18 +62,11 @@ const ResetPasswordPage = () => {
   });
 
   return (
-    <LoginLayout>
+    <LoginLayout headerEnd={<LanguageSelector />} heroIllustration={heroIllustration}>
       <div className={classes.container}>
-        <div className={classes.header}>
-          <IconButton color="primary" onClick={() => navigate('/login')}>
-            <BackIcon />
-          </IconButton>
-          <Typography variant="h5" className={classes.title}>
-            {t('loginReset')}
-          </Typography>
-        </div>
+        <AuthHeading subtitle={t(!token ? 'loginResetSubtitle' : 'loginUpdateSubtitle')} />
         {!token ? (
-          <TextField
+          <LoginField
             required
             type="email"
             label={t('userEmail')}
@@ -86,8 +76,9 @@ const ResetPasswordPage = () => {
             onChange={(event) => setEmail(event.target.value)}
           />
         ) : (
-          <PasswordField
+          <LoginField
             required
+            secret
             label={t('userPassword')}
             name="password"
             value={password}
@@ -97,7 +88,8 @@ const ResetPasswordPage = () => {
         )}
         <Button
           variant="contained"
-          color="secondary"
+          color="primary"
+          className={classes.submit}
           type="submit"
           onClick={handleSubmit}
           disabled={!/(.+)@(.+)\.(.{2,})/.test(email) && !password}
@@ -105,6 +97,11 @@ const ResetPasswordPage = () => {
         >
           {t('loginReset')}
         </Button>
+        <AuthPrompt
+          prompt={t('loginHaveAccount')}
+          actionLabel={t('loginSignIn')}
+          onAction={() => navigate('/login')}
+        />
       </div>
     </LoginLayout>
   );

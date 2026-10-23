@@ -4,7 +4,7 @@ import { useTheme } from '@mui/material/styles';
 import LogoImage from './LogoImage';
 import { useTranslation } from '../common/components/LocalizationProvider';
 import heroBackground from '../resources/images/login/hero-background.jpg';
-import heroIllustration from '../resources/images/login/hero-illustration.png';
+import defaultHeroIllustration from '../resources/images/login/hero-illustration-phone.png';
 
 const useStyles = makeStyles()((theme) => ({
   root: {
@@ -120,7 +120,7 @@ const useStyles = makeStyles()((theme) => ({
   },
 }));
 
-const LoginLayout = ({ children, headerEnd }) => {
+const LoginLayout = ({ children, headerEnd, heroIllustration }) => {
   const { classes, cx } = useStyles();
   const theme = useTheme();
   const t = useTranslation();
@@ -131,7 +131,7 @@ const LoginLayout = ({ children, headerEnd }) => {
     <main className={classes.root}>
       <div className={classes.formSide}>
         <div className={classes.topBar}>
-          <LogoImage className={classes.logo} color={theme.palette.primary.main} />
+          <LogoImage className={classes.logo} />
           {headerEnd}
         </div>
         <div className={classes.formCenter}>
@@ -142,7 +142,11 @@ const LoginLayout = ({ children, headerEnd }) => {
         <div className={classes.hero}>
           <img src={heroBackground} alt="" className={classes.heroBackground} />
           <div className={classes.heroContent}>
-            <img src={heroIllustration} alt="" className={classes.heroIllustration} />
+            <img
+              src={heroIllustration || defaultHeroIllustration}
+              alt=""
+              className={classes.heroIllustration}
+            />
             <div className={classes.heroText}>
               <Typography variant="h5" className={classes.heroTitle}>
                 {t('loginHeroTitle')}

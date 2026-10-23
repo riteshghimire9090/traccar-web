@@ -1,29 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import {
-  Select,
-  MenuItem,
-  FormControl,
-  Button,
-  TextField,
-  Link,
-  Alert,
-  IconButton,
-  Tooltip,
-  Typography,
-  Divider,
-} from '@mui/material';
-import { grey } from '@mui/material/colors';
-import CountryFlag from 'react-country-flag';
+import { Button, Link, Alert, IconButton, Tooltip, Divider } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
 import VpnLockIcon from '@mui/icons-material/VpnLock';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
-import LanguageIcon from '@mui/icons-material/Language';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { alpha, useTheme } from '@mui/material/styles';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { sessionActions } from '../store';
-import { useLocalization, useTranslation } from '../common/components/LocalizationProvider';
+import { useTranslation } from '../common/components/LocalizationProvider';
 import LoginLayout from './LoginLayout';
 import usePersistedState from '../common/util/usePersistedState';
 import {
@@ -35,7 +18,10 @@ import {
 import GoogleIcon from './GoogleIcon';
 import { useCatch } from '../reactHelper';
 import QrCodeDialog from '../common/components/QrCodeDialog';
-import PasswordField from '../common/components/PasswordField';
+import LoginField from './LoginField';
+import LanguageSelector from './LanguageSelector';
+import AuthHeading from './AuthHeading';
+import AuthPrompt from './AuthPrompt';
 
 const useStyles = makeStyles()((theme) => ({
   headerActions: {
@@ -43,50 +29,10 @@ const useStyles = makeStyles()((theme) => ({
     alignItems: 'center',
     gap: theme.spacing(0.5),
   },
-  languagePill: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: theme.spacing(0.75),
-    borderRadius: 999,
-    padding: theme.spacing(0.5, 1.5),
-    backgroundColor: alpha(theme.palette.primary.main, 0.08),
-    color: theme.palette.primary.main,
-  },
-  languageIcon: {
-    display: 'flex',
-    fontSize: 16,
-  },
-  select: {
-    '&.MuiInputBase-root': {
-      fontSize: 14,
-    },
-    '& .MuiSelect-select': {
-      display: 'flex',
-      alignItems: 'center',
-      gap: theme.spacing(1),
-      padding: 0,
-      paddingRight: `${theme.spacing(2.5)} !important`,
-    },
-    '& fieldset': {
-      border: 'none',
-    },
-  },
   container: {
     display: 'flex',
     flexDirection: 'column',
     gap: theme.spacing(2.5),
-  },
-  titleBlock: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing(1),
-    marginBottom: theme.spacing(0.5),
-  },
-  title: {
-    fontWeight: 700,
-  },
-  subtitle: {
-    color: theme.palette.text.secondary,
   },
   googleButton: {
     borderColor: theme.palette.divider,
@@ -98,14 +44,6 @@ const useStyles = makeStyles()((theme) => ({
       borderColor: theme.palette.divider,
     },
   },
-  field: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: theme.spacing(0.5),
-  },
-  label: {
-    fontWeight: 600,
-  },
   forgotLink: {
     alignSelf: 'flex-end',
     cursor: 'pointer',
@@ -116,34 +54,13 @@ const useStyles = makeStyles()((theme) => ({
   submit: {
     height: 56,
   },
-  registerPrompt: {
-    textAlign: 'center',
-    color: grey[500],
-  },
-  registerLink: {
-    cursor: 'pointer',
-    fontWeight: 600,
-    color: theme.palette.text.primary,
-  },
-  flag: {
-    display: 'flex',
-    alignItems: 'center',
-  },
 }));
 
 const LoginPage = () => {
   const { classes } = useStyles();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const theme = useTheme();
   const t = useTranslation();
-
-  const { languages, language, setLocalLanguage } = useLocalization();
-  const languageList = Object.entries(languages).map((values) => ({
-    code: values[0],
-    country: values[1].country,
-    name: values[1].name,
-  }));
 
   const [failed, setFailed] = useState(false);
 
@@ -154,10 +71,6 @@ const LoginPage = () => {
   const [showQr, setShowQr] = useState(false);
 
   const registrationEnabled = useSelector((state) => state.session.server.registration);
-  const languageEnabled = useSelector((state) => {
-    const attributes = state.session.server.attributes;
-    return !attributes.language && !attributes['ui.disableLoginLanguage'];
-  });
   const changeEnabled = useSelector((state) => !state.session.server.attributes.disableChange);
   const emailEnabled = useSelector((state) => state.session.server.emailEnabled);
   const openIdEnabled = useSelector((state) => state.session.server.openIdEnabled);
@@ -249,45 +162,12 @@ const LoginPage = () => {
               <QrCode2Icon />
             </IconButton>
           )}
-          {languageEnabled && (
-            <FormControl>
-              <div className={classes.languagePill}>
-                <LanguageIcon className={classes.languageIcon} />
-                <Select
-                  value={language}
-                  onChange={(e) => setLocalLanguage(e.target.value)}
-                  variant="outlined"
-                  className={classes.select}
-                  IconComponent={ExpandMoreIcon}
-                >
-                  {languageList.map((it) => (
-                    <MenuItem key={it.code} value={it.code}>
-                      <span className={classes.flag}>
-                        <CountryFlag
-                          countryCode={it.country}
-                          svg
-                          style={{ marginRight: theme.spacing(1) }}
-                        />
-                      </span>
-                      {it.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </div>
-            </FormControl>
-          )}
+          <LanguageSelector />
         </div>
       }
     >
       <div className={classes.container}>
-        <div className={classes.titleBlock}>
-          <Typography variant="h4" className={classes.title}>
-            {t('loginTitle')}
-          </Typography>
-          <Typography variant="body2" className={classes.subtitle}>
-            {t('loginSubtitle')}
-          </Typography>
-        </div>
+        <AuthHeading subtitle={t('loginSubtitle')} />
         {!!announcement && !announcementShown && (
           <Alert severity="info" onClose={() => setAnnouncementShown(true)}>
             {announcement}
@@ -307,49 +187,42 @@ const LoginPage = () => {
         {openIdEnabled && !openIdForced && <Divider>{t('loginOr')}</Divider>}
         {!openIdForced && (
           <>
-            <div className={classes.field}>
-              <Typography variant="body2" className={classes.label}>
-                {`${t('userEmail')} *`}
-              </Typography>
-              <TextField
-                required
-                error={failed}
-                placeholder={t('userEmail')}
-                name="email"
-                value={email}
-                autoComplete="email"
-                autoFocus={!email}
-                onChange={(e) => setEmail(e.target.value)}
-                helperText={failed && t('loginFailed')}
-              />
-            </div>
-            <div className={classes.field}>
-              <Typography variant="body2" className={classes.label}>
-                {`${t('userPassword')} *`}
-              </Typography>
-              <PasswordField
-                required
-                error={failed}
-                placeholder={t('userPassword')}
-                name="password"
-                value={password}
-                autoComplete="current-password"
-                autoFocus={!!email}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-              {emailEnabled && (
-                <Link
-                  onClick={() => navigate('/reset-password')}
-                  className={classes.forgotLink}
-                  underline="none"
-                  variant="body2"
-                >
-                  {t('loginReset')}
-                </Link>
-              )}
-            </div>
+            <LoginField
+              required
+              error={failed}
+              label={t('userEmail')}
+              name="email"
+              value={email}
+              autoComplete="email"
+              autoFocus={!email}
+              onChange={(e) => setEmail(e.target.value)}
+              helperText={failed && t('loginFailed')}
+            />
+            <LoginField
+              required
+              secret
+              error={failed}
+              label={t('userPassword')}
+              name="password"
+              value={password}
+              autoComplete="current-password"
+              autoFocus={!!email}
+              onChange={(e) => setPassword(e.target.value)}
+              extra={
+                emailEnabled && (
+                  <Link
+                    onClick={() => navigate('/reset-password')}
+                    className={classes.forgotLink}
+                    underline="none"
+                    variant="body2"
+                  >
+                    {t('loginReset')}
+                  </Link>
+                )
+              }
+            />
             {codeEnabled && (
-              <TextField
+              <LoginField
                 required
                 error={failed}
                 label={t('loginTotpCode')}
@@ -363,7 +236,7 @@ const LoginPage = () => {
               onClick={handlePasswordLogin}
               type="submit"
               variant="contained"
-              color="secondary"
+              color="primary"
               className={classes.submit}
               disabled={!email || !password || (codeEnabled && !code)}
               fullWidth
@@ -373,17 +246,11 @@ const LoginPage = () => {
           </>
         )}
         {!openIdForced && registrationEnabled && (
-          <Typography variant="body2" className={classes.registerPrompt}>
-            {`${t('loginNoAccount')} `}
-            <Link
-              onClick={() => navigate('/register')}
-              className={classes.registerLink}
-              underline="none"
-              variant="body2"
-            >
-              {t('loginRegister')}
-            </Link>
-          </Typography>
+          <AuthPrompt
+            prompt={t('loginNoAccount')}
+            actionLabel={t('loginRegister')}
+            onAction={() => navigate('/register')}
+          />
         )}
       </div>
       <QrCodeDialog open={showQr} onClose={() => setShowQr(false)} />
