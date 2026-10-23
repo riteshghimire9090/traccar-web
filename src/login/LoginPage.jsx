@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-  useMediaQuery,
   Select,
   MenuItem,
   FormControl,
@@ -13,11 +12,14 @@ import {
   Typography,
   Divider,
 } from '@mui/material';
+import { grey } from '@mui/material/colors';
 import CountryFlag from 'react-country-flag';
 import { makeStyles } from 'tss-react/mui';
 import VpnLockIcon from '@mui/icons-material/VpnLock';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
-import { useTheme } from '@mui/material/styles';
+import LanguageIcon from '@mui/icons-material/Language';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { alpha, useTheme } from '@mui/material/styles';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { sessionActions } from '../store';
@@ -30,29 +32,61 @@ import {
   nativeEnvironment,
   nativePostMessage,
 } from '../common/components/NativeInterface';
-import LogoImage from './LogoImage';
 import GoogleIcon from './GoogleIcon';
 import { useCatch } from '../reactHelper';
 import QrCodeDialog from '../common/components/QrCodeDialog';
 import PasswordField from '../common/components/PasswordField';
 
 const useStyles = makeStyles()((theme) => ({
-  options: {
-    position: 'fixed',
-    top: theme.spacing(2),
-    right: theme.spacing(2),
+  headerActions: {
     display: 'flex',
-    flexDirection: 'row',
-    gap: theme.spacing(1),
+    alignItems: 'center',
+    gap: theme.spacing(0.5),
+  },
+  languagePill: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(0.75),
+    borderRadius: 999,
+    padding: theme.spacing(0.5, 1.5),
+    backgroundColor: alpha(theme.palette.primary.main, 0.08),
+    color: theme.palette.primary.main,
+  },
+  languageIcon: {
+    display: 'flex',
+    fontSize: 16,
+  },
+  select: {
+    '&.MuiInputBase-root': {
+      fontSize: 14,
+    },
+    '& .MuiSelect-select': {
+      display: 'flex',
+      alignItems: 'center',
+      gap: theme.spacing(1),
+      padding: 0,
+      paddingRight: `${theme.spacing(2.5)} !important`,
+    },
+    '& fieldset': {
+      border: 'none',
+    },
   },
   container: {
     display: 'flex',
     flexDirection: 'column',
-    gap: theme.spacing(2),
+    gap: theme.spacing(2.5),
+  },
+  titleBlock: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(1),
+    marginBottom: theme.spacing(0.5),
   },
   title: {
     fontWeight: 700,
-    marginBottom: theme.spacing(1),
+  },
+  subtitle: {
+    color: theme.palette.text.secondary,
   },
   googleButton: {
     borderColor: theme.palette.divider,
@@ -64,21 +98,36 @@ const useStyles = makeStyles()((theme) => ({
       borderColor: theme.palette.divider,
     },
   },
-  extraContainer: {
+  field: {
     display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: theme.spacing(4),
-    marginTop: theme.spacing(2),
+    flexDirection: 'column',
+    gap: theme.spacing(0.5),
   },
-  registerButton: {
-    minWidth: 'unset',
+  label: {
+    fontWeight: 600,
   },
-  link: {
+  forgotLink: {
+    alignSelf: 'flex-end',
     cursor: 'pointer',
+    color: theme.palette.error.main,
+    fontWeight: 500,
+    marginTop: theme.spacing(0.5),
+  },
+  submit: {
+    height: 56,
+  },
+  registerPrompt: {
+    textAlign: 'center',
+    color: grey[500],
+  },
+  registerLink: {
+    cursor: 'pointer',
+    fontWeight: 600,
+    color: theme.palette.text.primary,
   },
   flag: {
-    marginRight: theme.spacing(1),
+    display: 'flex',
+    alignItems: 'center',
   },
 }));
 
@@ -181,46 +230,64 @@ const LoginPage = () => {
   }, []);
 
   return (
-    <LoginLayout>
-      <div className={classes.options}>
-        {nativeEnvironment && changeEnabled && (
-          <IconButton color="primary" onClick={() => navigate('/change-server')}>
-            <Tooltip
-              title={`${t('settingsServer')}: ${window.location.hostname}`}
-              open={showServerTooltip}
-              arrow
-            >
-              <VpnLockIcon />
-            </Tooltip>
-          </IconButton>
-        )}
-        {!nativeEnvironment && (
-          <IconButton color="primary" onClick={() => setShowQr(true)}>
-            <QrCode2Icon />
-          </IconButton>
-        )}
-        {languageEnabled && (
-          <FormControl>
-            <Select value={language} onChange={(e) => setLocalLanguage(e.target.value)}>
-              {languageList.map((it) => (
-                <MenuItem key={it.code} value={it.code}>
-                  <span className={classes.flag}>
-                    <CountryFlag countryCode={it.country} svg />
-                  </span>
-                  {it.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        )}
-      </div>
+    <LoginLayout
+      headerEnd={
+        <div className={classes.headerActions}>
+          {nativeEnvironment && changeEnabled && (
+            <IconButton color="primary" onClick={() => navigate('/change-server')}>
+              <Tooltip
+                title={`${t('settingsServer')}: ${window.location.hostname}`}
+                open={showServerTooltip}
+                arrow
+              >
+                <VpnLockIcon />
+              </Tooltip>
+            </IconButton>
+          )}
+          {!nativeEnvironment && (
+            <IconButton color="primary" onClick={() => setShowQr(true)}>
+              <QrCode2Icon />
+            </IconButton>
+          )}
+          {languageEnabled && (
+            <FormControl>
+              <div className={classes.languagePill}>
+                <LanguageIcon className={classes.languageIcon} />
+                <Select
+                  value={language}
+                  onChange={(e) => setLocalLanguage(e.target.value)}
+                  variant="outlined"
+                  className={classes.select}
+                  IconComponent={ExpandMoreIcon}
+                >
+                  {languageList.map((it) => (
+                    <MenuItem key={it.code} value={it.code}>
+                      <span className={classes.flag}>
+                        <CountryFlag
+                          countryCode={it.country}
+                          svg
+                          style={{ marginRight: theme.spacing(1) }}
+                        />
+                      </span>
+                      {it.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </div>
+            </FormControl>
+          )}
+        </div>
+      }
+    >
       <div className={classes.container}>
-        {useMediaQuery(theme.breakpoints.down('lg')) && (
-          <LogoImage color={theme.palette.primary.main} />
-        )}
-        <Typography variant="h5" className={classes.title}>
-          {t('loginTitle')}
-        </Typography>
+        <div className={classes.titleBlock}>
+          <Typography variant="h4" className={classes.title}>
+            {t('loginTitle')}
+          </Typography>
+          <Typography variant="body2" className={classes.subtitle}>
+            {t('loginSubtitle')}
+          </Typography>
+        </div>
         {!!announcement && !announcementShown && (
           <Alert severity="info" onClose={() => setAnnouncementShown(true)}>
             {announcement}
@@ -240,27 +307,47 @@ const LoginPage = () => {
         {openIdEnabled && !openIdForced && <Divider>{t('loginOr')}</Divider>}
         {!openIdForced && (
           <>
-            <TextField
-              required
-              error={failed}
-              label={t('userEmail')}
-              name="email"
-              value={email}
-              autoComplete="email"
-              autoFocus={!email}
-              onChange={(e) => setEmail(e.target.value)}
-              helperText={failed && 'Invalid username or password'}
-            />
-            <PasswordField
-              required
-              error={failed}
-              label={t('userPassword')}
-              name="password"
-              value={password}
-              autoComplete="current-password"
-              autoFocus={!!email}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+            <div className={classes.field}>
+              <Typography variant="body2" className={classes.label}>
+                {`${t('userEmail')} *`}
+              </Typography>
+              <TextField
+                required
+                error={failed}
+                placeholder={t('userEmail')}
+                name="email"
+                value={email}
+                autoComplete="email"
+                autoFocus={!email}
+                onChange={(e) => setEmail(e.target.value)}
+                helperText={failed && t('loginFailed')}
+              />
+            </div>
+            <div className={classes.field}>
+              <Typography variant="body2" className={classes.label}>
+                {`${t('userPassword')} *`}
+              </Typography>
+              <PasswordField
+                required
+                error={failed}
+                placeholder={t('userPassword')}
+                name="password"
+                value={password}
+                autoComplete="current-password"
+                autoFocus={!!email}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              {emailEnabled && (
+                <Link
+                  onClick={() => navigate('/reset-password')}
+                  className={classes.forgotLink}
+                  underline="none"
+                  variant="body2"
+                >
+                  {t('loginReset')}
+                </Link>
+              )}
+            </div>
             {codeEnabled && (
               <TextField
                 required
@@ -277,35 +364,26 @@ const LoginPage = () => {
               type="submit"
               variant="contained"
               color="secondary"
+              className={classes.submit}
               disabled={!email || !password || (codeEnabled && !code)}
+              fullWidth
             >
               {t('loginLogin')}
             </Button>
           </>
         )}
-        {!openIdForced && (
-          <div className={classes.extraContainer}>
-            {registrationEnabled && (
-              <Link
-                onClick={() => navigate('/register')}
-                className={classes.link}
-                underline="none"
-                variant="caption"
-              >
-                {t('loginRegister')}
-              </Link>
-            )}
-            {emailEnabled && (
-              <Link
-                onClick={() => navigate('/reset-password')}
-                className={classes.link}
-                underline="none"
-                variant="caption"
-              >
-                {t('loginReset')}
-              </Link>
-            )}
-          </div>
+        {!openIdForced && registrationEnabled && (
+          <Typography variant="body2" className={classes.registerPrompt}>
+            {`${t('loginNoAccount')} `}
+            <Link
+              onClick={() => navigate('/register')}
+              className={classes.registerLink}
+              underline="none"
+              variant="body2"
+            >
+              {t('loginRegister')}
+            </Link>
+          </Typography>
         )}
       </div>
       <QrCodeDialog open={showQr} onClose={() => setShowQr(false)} />

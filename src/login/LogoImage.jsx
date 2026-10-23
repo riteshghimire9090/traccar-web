@@ -14,22 +14,24 @@ const useStyles = makeStyles()((theme) => ({
   },
 }));
 
-const LogoImage = ({ color }) => {
+const LogoImage = ({ color, className }) => {
   const theme = useTheme();
-  const { classes } = useStyles();
+  const { classes, cx } = useStyles();
 
   const expanded = !useMediaQuery(theme.breakpoints.down('lg'));
 
   const logo = useSelector((state) => state.session.server.attributes?.logo);
   const logoInverted = useSelector((state) => state.session.server.attributes?.logoInverted);
 
+  const imageClassName = cx(classes.image, className);
+
   if (logo) {
     if (expanded && logoInverted) {
-      return <img className={classes.image} src={logoInverted} alt="" />;
+      return <img className={imageClassName} src={logoInverted} alt="" />;
     }
-    return <img className={classes.image} src={logo} alt="" />;
+    return <img className={imageClassName} src={logo} alt="" />;
   }
-  return <Logo className={classes.image} style={{ color }} />;
+  return <Logo className={imageClassName} style={{ color }} />;
 };
 
 export default LogoImage;
