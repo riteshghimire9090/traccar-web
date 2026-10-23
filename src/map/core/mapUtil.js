@@ -79,6 +79,26 @@ export const prepareIcon = (background, icon, color) => {
   return context.getImageData(0, 0, canvas.width, canvas.height);
 };
 
+// Renders a vehicle category icon on its own, with no pin/background shape,
+// sized to its natural aspect ratio so it can be rotated in place to match
+// the device's course and look like it is actually facing that direction.
+export const prepareVehicleIcon = (icon, size = 32) => {
+  const scale = size / Math.max(icon.width, icon.height);
+  const width = icon.width * scale;
+  const height = icon.height * scale;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = width * devicePixelRatio;
+  canvas.height = height * devicePixelRatio;
+  canvas.style.width = `${width}px`;
+  canvas.style.height = `${height}px`;
+
+  const context = canvas.getContext('2d');
+  context.drawImage(icon, 0, 0, canvas.width, canvas.height);
+
+  return context.getImageData(0, 0, canvas.width, canvas.height);
+};
+
 export const reverseCoordinates = (it) => {
   if (!it) {
     return it;

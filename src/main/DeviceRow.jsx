@@ -41,7 +41,7 @@ const useStyles = makeStyles()((theme) => ({
   icon: {
     width: '25px',
     height: '25px',
-    filter: 'brightness(0) invert(1)',
+    objectFit: 'contain',
   },
   batteryText: {
     fontSize: '0.75rem',

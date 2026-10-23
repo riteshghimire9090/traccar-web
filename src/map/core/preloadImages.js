@@ -1,31 +1,12 @@
 import { grey } from '@mui/material/colors';
 import { createTheme } from '@mui/material';
-import { loadImage, prepareIcon } from './mapUtil';
+import { loadImage, prepareIcon, prepareVehicleIcon } from './mapUtil';
 
 import directionSvg from '../../resources/images/direction.svg';
 import backgroundSvg from '../../resources/images/background.svg';
-import animalSvg from '@material-symbols/svg-600/outlined/pets.svg';
-import bicycleSvg from '@material-symbols/svg-600/outlined/directions_bike.svg';
-import boatSvg from '@material-symbols/svg-600/outlined/sailing.svg';
-import busSvg from '@material-symbols/svg-600/outlined/directions_bus.svg';
-import carSvg from '@material-symbols/svg-600/outlined/directions_car.svg';
-import camperSvg from '@material-symbols/svg-600/outlined/rv_hookup.svg';
-import craneSvg from '@material-symbols/svg-600/outlined/precision_manufacturing.svg';
-import defaultSvg from '@material-symbols/svg-600/outlined/location_on.svg';
 import startSvg from '@material-symbols/svg-600/outlined/play_circle.svg';
 import finishSvg from '@material-symbols/svg-600/outlined/stop_circle.svg';
-import helicopterSvg from '@material-symbols/svg-600/outlined/helicopter.svg';
-import motorcycleSvg from '@material-symbols/svg-600/outlined/motorcycle.svg';
 import personSvg from '@material-symbols/svg-600/outlined/person.svg';
-import planeSvg from '@material-symbols/svg-600/outlined/flight.svg';
-import scooterSvg from '@material-symbols/svg-600/outlined/moped.svg';
-import shipSvg from '@material-symbols/svg-600/outlined/directions_boat.svg';
-import tractorSvg from '@material-symbols/svg-600/outlined/agriculture.svg';
-import trailerSvg from '@material-symbols/svg-600/outlined/auto_towing.svg';
-import trainSvg from '@material-symbols/svg-600/outlined/train.svg';
-import tramSvg from '@material-symbols/svg-600/outlined/tram.svg';
-import truckSvg from '@material-symbols/svg-600/outlined/local_shipping.svg';
-import vanSvg from '@material-symbols/svg-600/outlined/airport_shuttle.svg';
 
 import warningSvg from '@material-symbols/svg-600/outlined/warning.svg';
 import taskAltSvg from '@material-symbols/svg-600/outlined/task_alt.svg';
@@ -44,42 +25,93 @@ import imageSvg from '@material-symbols/svg-600/outlined/image.svg';
 import connectWithoutContactSvg from '@material-symbols/svg-600/outlined/connect_without_contact.svg';
 import smsSvg from '@material-symbols/svg-600/outlined/sms.svg';
 
-export const mapIcons = {
-  animal: animalSvg,
-  bicycle: bicycleSvg,
-  boat: boatSvg,
-  bus: busSvg,
-  car: carSvg,
-  camper: camperSvg,
-  crane: craneSvg,
-  default: defaultSvg,
-  finish: finishSvg,
-  helicopter: helicopterSvg,
-  motorcycle: motorcycleSvg,
-  person: personSvg,
-  plane: planeSvg,
-  scooter: scooterSvg,
-  ship: shipSvg,
-  start: startSvg,
-  tractor: tractorSvg,
-  trailer: trailerSvg,
-  train: trainSvg,
-  tram: tramSvg,
-  truck: truckSvg,
-  van: vanSvg,
+import vehicle1 from '../../resources/images/vehicles/1.png';
+import vehicle2 from '../../resources/images/vehicles/2.png';
+import vehicle3 from '../../resources/images/vehicles/3.png';
+import vehicle4 from '../../resources/images/vehicles/4.png';
+import vehicle5 from '../../resources/images/vehicles/5.png';
+import vehicle6 from '../../resources/images/vehicles/6.png';
+import vehicle7 from '../../resources/images/vehicles/7.png';
+import vehicle8 from '../../resources/images/vehicles/8.png';
+import vehicle9 from '../../resources/images/vehicles/9.png';
+import vehicle10 from '../../resources/images/vehicles/10.png';
+import vehicle11 from '../../resources/images/vehicles/11.png';
+import vehicle12 from '../../resources/images/vehicles/12.png';
+import vehicle13 from '../../resources/images/vehicles/13.png';
+import vehicle14 from '../../resources/images/vehicles/14.png';
+import vehicle15 from '../../resources/images/vehicles/15.png';
+import vehicle16 from '../../resources/images/vehicles/16.png';
+import vehicle18 from '../../resources/images/vehicles/18.png';
+import vehicle19 from '../../resources/images/vehicles/19.png';
+import vehicle20 from '../../resources/images/vehicles/20.png';
+
+// Mirrors the VehicleType.path mapping from the mobile app's vehicle icon set
+// (assets/cars/<n>.png), including its reuse of the same picture for several
+// categories (e.g. bicycle/scooter share one icon, tram/bike share another).
+const vehicleIconByNumber = {
+  1: vehicle1,
+  2: vehicle2,
+  3: vehicle3,
+  4: vehicle4,
+  5: vehicle5,
+  6: vehicle6,
+  7: vehicle7,
+  8: vehicle8,
+  9: vehicle9,
+  10: vehicle10,
+  11: vehicle11,
+  12: vehicle12,
+  13: vehicle13,
+  14: vehicle14,
+  15: vehicle15,
+  16: vehicle16,
+  18: vehicle18,
+  19: vehicle19,
+  20: vehicle20,
 };
 
-export const mapIconKey = (category) => {
-  switch (category) {
-    case 'offroad':
-    case 'pickup':
-      return 'car';
-    case 'trolleybus':
-      return 'bus';
-    default:
-      return mapIcons.hasOwnProperty(category) ? category : 'default';
-  }
+const vehicleCategoryNumber = {
+  default: 1,
+  van: 1,
+  bicycle: 2,
+  scooter: 2,
+  animal: 3,
+  boat: 4,
+  bus: 5,
+  car: 6,
+  crane: 7,
+  helicopter: 8,
+  motorcycle: 9,
+  offroad: 10,
+  person: 11,
+  pickup: 12,
+  ship: 13,
+  plane: 14,
+  tractor: 15,
+  train: 16,
+  tram: 18,
+  bike: 18,
+  trolleybus: 19,
+  truck: 20,
+  // Not present in the mobile app's VehicleType enum; fall back to default.
+  camper: 1,
+  trailer: 1,
 };
+
+export const vehicleIcons = Object.fromEntries(
+  Object.entries(vehicleCategoryNumber).map(([category, number]) => [
+    category,
+    vehicleIconByNumber[number],
+  ]),
+);
+
+export const mapIcons = {
+  ...vehicleIcons,
+  start: startSvg,
+  finish: finishSvg,
+};
+
+export const mapIconKey = (category) => (mapIcons.hasOwnProperty(category) ? category : 'default');
 
 export const eventIcons = {
   alarm: warningSvg,
@@ -123,16 +155,22 @@ export default async () => {
   mapImages.background = await prepareIcon(background);
   mapImages.direction = await prepareIcon(await loadImage(directionSvg));
   await Promise.all(
-    Object.keys(mapIcons).map(async (key) => {
-      const results = [];
+    Object.keys(vehicleIcons).map(async (key) => {
+      const icon = await loadImage(vehicleIcons[key]);
+      const prepared = prepareVehicleIcon(icon);
       ['info', 'success', 'error', 'neutral'].forEach((color) => {
-        results.push(
-          loadImage(mapIcons[key]).then((icon) => {
-            mapImages[`${key}-${color}`] = prepareIcon(background, icon, theme.palette[color].main);
-          }),
-        );
+        mapImages[`${key}-${color}`] = prepared;
       });
-      await Promise.all(results);
+    }),
+  );
+  await Promise.all(
+    ['start', 'finish'].map(async (key) => {
+      const icon = await loadImage(mapIcons[key]);
+      await Promise.all(
+        ['info', 'success', 'error', 'neutral'].map(async (color) => {
+          mapImages[`${key}-${color}`] = prepareIcon(background, icon, theme.palette[color].main);
+        }),
+      );
     }),
   );
   await Promise.all(
