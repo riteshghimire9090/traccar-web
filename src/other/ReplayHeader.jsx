@@ -39,23 +39,30 @@ const useStyles = makeStyles()((theme) => ({
     left: '50%',
     transform: 'translateX(-50%)',
     width: 'calc(100% - 64px)',
-    maxWidth: 1216,
+    maxWidth: 1456,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: theme.spacing(1),
-    flexWrap: 'wrap',
+    flexWrap: 'nowrap',
+    overflowX: 'auto',
+    scrollbarWidth: 'none',
+    '&::-webkit-scrollbar': {
+      display: 'none',
+    },
   },
   leftGroup: {
     display: 'flex',
     alignItems: 'center',
     gap: 6,
-    flexWrap: 'wrap',
+    flexWrap: 'nowrap',
+    flexShrink: 0,
   },
   rightGroup: {
     display: 'flex',
     alignItems: 'center',
     gap: 12,
+    flexShrink: 0,
   },
   pill: {
     display: 'flex',
@@ -78,6 +85,11 @@ const useStyles = makeStyles()((theme) => ({
   pillText: {
     fontSize: 14,
     fontWeight: 500,
+  },
+  deviceName: {
+    maxWidth: 160,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   },
   rangeText: {
     fontSize: 16,
@@ -239,7 +251,7 @@ const ReplayHeader = ({
           className={classes.pill}
           onClick={(e) => setDeviceAnchor(e.currentTarget)}
         >
-          <span className={classes.pillText}>{deviceName}</span>
+          <span className={cx(classes.pillText, classes.deviceName)}>{deviceName}</span>
           <CaretDownIcon width={16} height={16} />
         </button>
         <Menu

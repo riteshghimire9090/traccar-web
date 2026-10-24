@@ -9,6 +9,7 @@ import { formatTime } from '../common/util/formatter';
 import { useTranslation } from '../common/components/LocalizationProvider';
 import PlayCircleIcon from '../resources/images/nav/play-circle.svg?react';
 import CaretDownIcon from '../resources/images/nav/caret-down.svg?react';
+import { SHEET_HEIGHT } from './ReplayDetailsSheet';
 
 const SPEED_OPTIONS = [1, 2, 5, 10, 25];
 
@@ -29,6 +30,9 @@ const useStyles = makeStyles()((theme) => ({
     backgroundColor: 'white',
     border: `1px solid ${theme.palette.grey[300]}`,
     borderRadius: 16,
+  },
+  barRaised: {
+    bottom: SHEET_HEIGHT + 16,
   },
   play: {
     '&&': {
@@ -79,7 +83,9 @@ const useStyles = makeStyles()((theme) => ({
     whiteSpace: 'nowrap',
   },
   toggleButtonActive: {
-    borderColor: theme.palette.text.primary,
+    borderColor: theme.palette.primary.main,
+    backgroundColor: theme.palette.primary.main,
+    color: theme.palette.primary.contrastText,
     fontWeight: 500,
   },
 }));
@@ -92,8 +98,8 @@ const ReplayPlaybackBar = ({
   onPlayPause,
   speed,
   onSpeedChange,
-  titleField,
-  onTitleFieldChange,
+  detailsTab,
+  onOpenDetails,
   onDownload,
 }) => {
   const { classes, cx } = useStyles();
@@ -101,7 +107,7 @@ const ReplayPlaybackBar = ({
   const [speedAnchor, setSpeedAnchor] = useState(null);
 
   return (
-    <div className={classes.bar}>
+    <div className={cx(classes.bar, detailsTab && classes.barRaised)}>
       <div className={classes.steps}>
         <IconButton
           size="small"
@@ -175,16 +181,16 @@ const ReplayPlaybackBar = ({
           type="button"
           className={cx(
             classes.toggleButton,
-            titleField === 'fixTime' && classes.toggleButtonActive,
+            detailsTab === 'details' && classes.toggleButtonActive,
           )}
-          onClick={() => onTitleFieldChange('fixTime')}
+          onClick={() => onOpenDetails('details')}
         >
           {t('replayDetails')}
         </button>
         <button
           type="button"
-          className={cx(classes.toggleButton, titleField === 'speed' && classes.toggleButtonActive)}
-          onClick={() => onTitleFieldChange('speed')}
+          className={cx(classes.toggleButton, detailsTab === 'speed' && classes.toggleButtonActive)}
+          onClick={() => onOpenDetails('speed')}
         >
           {t('positionSpeed')}
         </button>

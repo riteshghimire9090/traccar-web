@@ -11,6 +11,7 @@ import MapRuler from '../map/control/MapRuler';
 import { useTranslation } from '../common/components/LocalizationProvider';
 import { useCatchCallback } from '../reactHelper';
 import MapCamera from '../map/MapCamera';
+import MapFollowCamera from '../map/MapFollowCamera';
 import MapGeofence from '../map/MapGeofence';
 import StatusCard from '../common/components/StatusCard';
 import MapScale from '../map/MapScale';
@@ -18,6 +19,7 @@ import fetchOrThrow from '../common/util/fetchOrThrow';
 import MapOverlay from '../map/overlay/MapOverlay';
 import ReplayHeader from './ReplayHeader';
 import ReplayPlaybackBar from './ReplayPlaybackBar';
+import ReplayDetailsSheet from './ReplayDetailsSheet';
 
 const quickRange = (key) => {
   const now = dayjs();
@@ -64,7 +66,7 @@ const ReplayPage = () => {
   const [playing, setPlaying] = useState(false);
   const [loading, setLoading] = useState(false);
   const [speed, setSpeed] = useState(5);
-  const [titleField, setTitleField] = useState('fixTime');
+  const [detailsTab, setDetailsTab] = useState(null);
   const [rulerActive, setRulerActive] = useState(false);
 
   const loaded = Boolean(!loading && positions.length);
@@ -157,7 +159,7 @@ const ReplayPage = () => {
           <MapPositionMarkers
             positions={[positions[index]]}
             onMarkerClick={onMarkerClick}
-            titleField={titleField}
+            titleField="fixTime"
             disabled={rulerActive}
           />
         )}
@@ -165,6 +167,10 @@ const ReplayPage = () => {
       </MapView>
       <MapScale />
       <MapCamera positions={positions} />
+      <MapFollowCamera
+        latitude={positions[index]?.latitude}
+        longitude={positions[index]?.longitude}
+      />
 
       <ReplayHeader
         deviceId={selectedDeviceId}
@@ -186,9 +192,18 @@ const ReplayPage = () => {
           onPlayPause={() => setPlaying(!playing)}
           speed={speed}
           onSpeedChange={setSpeed}
-          titleField={titleField}
-          onTitleFieldChange={setTitleField}
+          detailsTab={detailsTab}
+          onOpenDetails={setDetailsTab}
           onDownload={handleDownload}
+        />
+      )}
+
+      {detailsTab && (
+        <ReplayDetailsSheet
+          positions={positions}
+          index={index}
+          onRowClick={setIndex}
+          onClose={() => setDetailsTab(null)}
         />
       )}
 
