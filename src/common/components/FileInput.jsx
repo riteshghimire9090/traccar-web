@@ -3,6 +3,7 @@ import TextField from '@mui/material/TextField';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import CloseIcon from '@mui/icons-material/Close';
+import AddIcon from '@mui/icons-material/Add';
 
 const FileInput = ({ placeholder, value, onChange, slotProps }) => {
   const inputRef = useRef(null);
@@ -36,10 +37,10 @@ const FileInput = ({ placeholder, value, onChange, slotProps }) => {
           input: {
             readOnly: true,
             sx: { cursor: 'pointer' },
-            endAdornment: value && (
+            endAdornment: (
               <InputAdornment position="end">
-                <IconButton size="small" edge="end" onClick={handleClear}>
-                  <CloseIcon fontSize="small" />
+                <IconButton size="small" edge="end" onClick={value ? handleClear : openPicker}>
+                  {value ? <CloseIcon fontSize="small" /> : <AddIcon fontSize="small" />}
                 </IconButton>
               </InputAdornment>
             ),

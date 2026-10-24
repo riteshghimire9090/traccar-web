@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Rnd } from 'react-rnd';
 import { Typography, IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
@@ -9,18 +9,15 @@ import RouteIcon from '@mui/icons-material/Route';
 import ExploreIcon from '@mui/icons-material/Explore';
 import WifiIcon from '@mui/icons-material/Wifi';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 
 import { useTranslation } from './LocalizationProvider';
-import RemoveDialog from './RemoveDialog';
+import DeviceManageDialog from './DeviceManageDialog';
 import PositionValue from './PositionValue';
-import { useDeviceReadonly, useRestriction } from '../util/permissions';
+import { useRestriction } from '../util/permissions';
 import usePositionAttributes from '../attributes/usePositionAttributes';
-import { devicesActions } from '../../store';
-import { useCatch, useCatchCallback } from '../../reactHelper';
+import { useCatchCallback } from '../../reactHelper';
 import { useAttributePreference } from '../util/preferences';
 import { formatSpeed, formatStatus, getStatusColor } from '../util/formatter';
 import fetchOrThrow from '../util/fetchOrThrow';
@@ -222,11 +219,9 @@ const useStyles = makeStyles()((theme, { desktopPadding }) => ({
 const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPadding = 0 }) => {
   const { classes, cx } = useStyles({ desktopPadding });
   const navigate = useNavigate();
-  const dispatch = useDispatch();
   const t = useTranslation();
 
   const readonly = useRestriction('readonly');
-  const deviceReadonly = useDeviceReadonly();
 
   const shareDisabled = useSelector((state) => state.session.server.attributes.disableShare);
   const user = useSelector((state) => state.session.user);
@@ -243,17 +238,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
   const navigationAppTitle = useAttributePreference('navigationAppTitle');
 
   const [mapsAnchorEl, setMapsAnchorEl] = useState(null);
-  const [manageAnchorEl, setManageAnchorEl] = useState(null);
-
-  const [removing, setRemoving] = useState(false);
-
-  const handleRemove = useCatch(async (removed) => {
-    if (removed) {
-      const response = await fetchOrThrow('/api/devices');
-      dispatch(devicesActions.refresh(await response.json()));
-    }
-    setRemoving(false);
-  });
+  const [manageOpen, setManageOpen] = useState(false);
 
   const handleGeofence = useCatchCallback(async () => {
     const newItem = {
@@ -452,7 +437,7 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
                   <button
                     type="button"
                     className={classes.action}
-                    onClick={(e) => setManageAnchorEl(e.currentTarget)}
+                    onClick={() => setManageOpen(true)}
                     disabled={disableActions}
                   >
                     <PersonArmsSpreadIcon width={18} height={18} />
@@ -503,28 +488,10 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
           )}
         </Menu>
       )}
-      <Menu
-        anchorEl={manageAnchorEl}
-        open={Boolean(manageAnchorEl)}
-        onClose={() => setManageAnchorEl(null)}
-      >
-        <MenuItem
-          onClick={() => navigate(`/settings/device/${deviceId}`)}
-          disabled={deviceReadonly}
-        >
-          <EditIcon fontSize="small" sx={{ marginInlineEnd: 1 }} />
-          {t('sharedEdit')}
-        </MenuItem>
-        <MenuItem onClick={() => setRemoving(true)} disabled={deviceReadonly}>
-          <DeleteIcon fontSize="small" color="error" sx={{ marginInlineEnd: 1 }} />
-          <Typography color="error">{t('sharedRemove')}</Typography>
-        </MenuItem>
-      </Menu>
-      <RemoveDialog
-        open={removing}
-        endpoint="devices"
-        itemId={deviceId}
-        onResult={(removed) => handleRemove(removed)}
+      <DeviceManageDialog
+        open={manageOpen}
+        deviceId={deviceId}
+        onClose={() => setManageOpen(false)}
       />
     </>
   );
