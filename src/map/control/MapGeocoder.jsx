@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
 import {
   useTheme,
   Popover,
@@ -15,7 +14,7 @@ import { createRoot } from 'react-dom/client';
 import TravelExploreIcon from '@mui/icons-material/TravelExplore';
 import { map } from '../core/MapView';
 import { toMapCoordinates } from '../core/mapUtil';
-import { messagesActions } from '../../store';
+import useGeocodeSearch from '../core/useGeocodeSearch';
 import { useTranslation } from '../../common/components/LocalizationProvider';
 
 const useStyles = makeStyles()((theme) => ({
@@ -43,41 +42,11 @@ const useStyles = makeStyles()((theme) => ({
 
 const MapGeocoder = () => {
   const theme = useTheme();
-  const dispatch = useDispatch();
   const t = useTranslation();
   const { classes, cx } = useStyles();
   const [anchorEl, setAnchorEl] = useState(null);
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState([]);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (!query.trim()) {
-      setResults([]);
-      setLoading(false);
-      return;
-    }
-    const controller = new AbortController();
-    const timeoutId = setTimeout(async () => {
-      setLoading(true);
-      try {
-        const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=geojson&addressdetails=1`;
-        const response = await fetch(url, { signal: controller.signal });
-        const data = await response.json();
-        setResults(data.features || []);
-      } catch (e) {
-        if (e.name !== 'AbortError') {
-          dispatch(messagesActions.push(e.message));
-        }
-      } finally {
-        setLoading(false);
-      }
-    }, 300);
-    return () => {
-      controller.abort();
-      clearTimeout(timeoutId);
-    };
-  }, [query, dispatch]);
+  const { results, loading } = useGeocodeSearch(query);
 
   useEffect(() => {
     let element;
@@ -109,7 +78,6 @@ const MapGeocoder = () => {
     map.fitBounds([toMapCoordinates(minX, minY), toMapCoordinates(maxX, maxY)], { padding: 40 });
     setAnchorEl(null);
     setQuery('');
-    setResults([]);
   };
 
   return (

@@ -28,7 +28,7 @@ const MapRoutePoints = ({ positions, onClick, showSpeedControl }) => {
       {
         type: 'symbol',
         paint: {
-          'text-color': ['get', 'color'],
+          'text-opacity': 0,
         },
         layout: {
           'text-font': findFonts(map),

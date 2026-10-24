@@ -19,7 +19,7 @@ const MapRoutePath = ({ positions }) => {
     return null;
   });
 
-  const mapLineWidth = useAttributePreference('mapLineWidth', 2);
+  const mapLineWidth = useAttributePreference('mapLineWidth', 3);
   const mapLineOpacity = useAttributePreference('mapLineOpacity', 1);
 
   const minSpeed = positions.map((p) => p.speed).reduce((a, b) => Math.min(a, b), Infinity);
