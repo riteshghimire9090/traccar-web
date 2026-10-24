@@ -1,31 +1,18 @@
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Rnd } from 'react-rnd';
-import {
-  Card,
-  CardContent,
-  Typography,
-  CardActions,
-  IconButton,
-  Table,
-  TableBody,
-  TableRow,
-  TableCell,
-  Menu,
-  MenuItem,
-  CardMedia,
-  TableFooter,
-  Link,
-  Tooltip,
-} from '@mui/material';
+import { Typography, IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
 import { makeStyles } from 'tss-react/mui';
-import CloseIcon from '@mui/icons-material/Close';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import RouteIcon from '@mui/icons-material/Route';
-import SendIcon from '@mui/icons-material/Send';
+import ExploreIcon from '@mui/icons-material/Explore';
+import WifiIcon from '@mui/icons-material/Wifi';
+import VpnKeyIcon from '@mui/icons-material/VpnKey';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import PendingIcon from '@mui/icons-material/Pending';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
 
 import { useTranslation } from './LocalizationProvider';
 import RemoveDialog from './RemoveDialog';
@@ -35,52 +22,185 @@ import usePositionAttributes from '../attributes/usePositionAttributes';
 import { devicesActions } from '../../store';
 import { useCatch, useCatchCallback } from '../../reactHelper';
 import { useAttributePreference } from '../util/preferences';
+import { formatSpeed, formatStatus, getStatusColor } from '../util/formatter';
 import fetchOrThrow from '../util/fetchOrThrow';
+
+import CloseIcon from '../../resources/images/nav/close-x2.svg?react';
+import ListBulletsIcon from '../../resources/images/nav/list-bullets.svg?react';
+import NavigationArrowIcon from '../../resources/images/nav/navigation-arrow.svg?react';
+import CodeBlockIcon from '../../resources/images/nav/code-block.svg?react';
+import FenceIcon from '../../resources/images/nav/fence.svg?react';
+import SpeedometerIcon from '../../resources/images/nav/speedometer.svg?react';
+import BatteryHighIcon from '../../resources/images/nav/battery-high.svg?react';
+import LightningIcon from '../../resources/images/nav/lightning.svg?react';
+import PlayCircleIcon from '../../resources/images/nav/play-circle.svg?react';
+import ChartBarIcon from '../../resources/images/nav/chart-bar.svg?react';
+import PersonArmsSpreadIcon from '../../resources/images/nav/person-arms-spread.svg?react';
+import ShareNetworkIcon from '../../resources/images/nav/share-network.svg?react';
+
+dayjs.extend(relativeTime);
+
+const attributeIcons = {
+  speed: SpeedometerIcon,
+  obdSpeed: SpeedometerIcon,
+  totalDistance: RouteIcon,
+  distance: RouteIcon,
+  hours: RouteIcon,
+  odometer: RouteIcon,
+  course: ExploreIcon,
+  ignition: VpnKeyIcon,
+  batteryLevel: BatteryHighIcon,
+  battery: LightningIcon,
+  power: LightningIcon,
+  network: WifiIcon,
+};
 
 const useStyles = makeStyles()((theme, { desktopPadding }) => ({
   card: {
     pointerEvents: 'auto',
-    width: theme.dimensions.popupMaxWidth,
+    width: 420,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(2),
+    padding: theme.spacing(3),
+    borderRadius: 20,
+    backgroundColor: theme.palette.background.paper,
+    boxShadow: '0px 0px 1px 0px rgba(0,0,0,0.12), 0px 2px 2px 0px rgba(0,0,0,0.08)',
   },
   header: {
     display: 'flex',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    padding: theme.spacing(1, 1, 0, 2),
+    justifyContent: 'space-between',
+    gap: theme.spacing(1),
+    cursor: 'move',
+  },
+  headerStart: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(2),
+    minWidth: 0,
+  },
+  name: {
+    fontWeight: 600,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  badge: {
+    flexShrink: 0,
+    padding: theme.spacing(0.5, 1),
+    borderRadius: 3,
+    fontSize: 14,
+  },
+  success: {
+    backgroundColor: '#acffcf',
+    color: theme.palette.success.dark,
+  },
+  error: {
+    backgroundColor: theme.palette.error.light,
+    color: theme.palette.error.dark,
+  },
+  neutral: {
+    backgroundColor: theme.palette.action.selected,
     color: theme.palette.text.secondary,
   },
-  media: {
-    height: theme.dimensions.popupImageHeight,
-    '& > div': {
-      color: theme.palette.common.white,
-      mixBlendMode: 'difference',
-    },
+  location: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: theme.spacing(0.5),
+    padding: theme.spacing(1),
+    borderRadius: 6,
+    backgroundColor: '#f5f5f7',
   },
-  content: {
-    paddingTop: theme.spacing(1),
-    paddingBottom: theme.spacing(1),
-    maxHeight: theme.dimensions.cardContentMaxHeight,
-    overflow: 'auto',
+  locationHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
-  icon: {
-    width: '25px',
-    height: '25px',
-    filter: 'brightness(0) invert(1)',
+  locationLabel: {
+    fontWeight: 500,
+    fontSize: 14,
   },
-  table: {
-    '& .MuiTableCell-sizeSmall': {
-      paddingLeft: 0,
-      paddingRight: 0,
-    },
-    '& .MuiTableCell-sizeSmall:first-of-type': {
-      paddingRight: theme.spacing(1),
-    },
+  updated: {
+    fontSize: 14,
+    color: theme.palette.info.main,
   },
-  cell: {
-    borderBottom: 'none',
+  address: {
+    fontSize: 16,
+    color: theme.palette.text.primary,
+  },
+  grid: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: theme.spacing(1),
+  },
+  chip: {
+    flex: '1 1 40%',
+    display: 'flex',
+    alignItems: 'center',
+    gap: theme.spacing(1),
+    padding: theme.spacing(1),
+    borderRadius: 6,
+    backgroundColor: '#f5f5f7',
+    minWidth: 0,
+  },
+  chipIcon: {
+    flexShrink: 0,
+    color: theme.palette.text.secondary,
+  },
+  chipIconTrue: {
+    color: theme.palette.success.main,
+  },
+  chipIconFalse: {
+    color: theme.palette.error.main,
+  },
+  chipText: {
+    display: 'flex',
+    flexDirection: 'column',
+    minWidth: 0,
+  },
+  chipLabel: {
+    fontSize: 11,
+    lineHeight: 1.3,
+    color: theme.palette.text.secondary,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  },
+  chipValue: {
+    fontSize: 14,
+    lineHeight: 1.3,
+    color: theme.palette.text.primary,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
   },
   actions: {
-    justifyContent: 'space-between',
+    display: 'flex',
+    gap: theme.spacing(0.75),
+    padding: theme.spacing(0.5),
+    borderRadius: 8,
+    backgroundColor: theme.palette.primary.main,
+  },
+  action: {
+    flex: 1,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 40,
+    borderRadius: 6,
+    border: 'none',
+    cursor: 'pointer',
+    backgroundColor: 'rgba(255, 255, 255, 0.16)',
+    color: theme.palette.common.white,
+    '&:disabled': {
+      opacity: 0.4,
+      cursor: 'default',
+    },
+  },
+  actionPrimary: {
+    backgroundColor: theme.palette.common.white,
+    color: theme.palette.primary.main,
   },
   root: {
     pointerEvents: 'none',
@@ -99,23 +219,6 @@ const useStyles = makeStyles()((theme, { desktopPadding }) => ({
   },
 }));
 
-const StatusRow = ({ name, content }) => {
-  const { classes } = useStyles({ desktopPadding: 0 });
-
-  return (
-    <TableRow>
-      <TableCell className={classes.cell}>
-        <Typography variant="body2">{name}</Typography>
-      </TableCell>
-      <TableCell className={classes.cell}>
-        <Typography variant="body2" color="textSecondary">
-          {content}
-        </Typography>
-      </TableCell>
-    </TableRow>
-  );
-};
-
 const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPadding = 0 }) => {
   const { classes, cx } = useStyles({ desktopPadding });
   const navigate = useNavigate();
@@ -129,18 +232,18 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
   const user = useSelector((state) => state.session.user);
   const device = useSelector((state) => state.devices.items[deviceId]);
 
-  const deviceImage = device?.attributes?.deviceImage;
-
   const positionAttributes = usePositionAttributes(t);
   const positionItems = useAttributePreference(
     'positionItems',
-    'fixTime,address,speed,totalDistance',
+    'fixTime,speed,totalDistance,course,ignition,batteryLevel,network',
   );
+  const speedUnit = useAttributePreference('speedUnit');
 
   const navigationAppLink = useAttributePreference('navigationAppLink');
   const navigationAppTitle = useAttributePreference('navigationAppTitle');
 
-  const [anchorEl, setAnchorEl] = useState(null);
+  const [mapsAnchorEl, setMapsAnchorEl] = useState(null);
+  const [manageAnchorEl, setManageAnchorEl] = useState(null);
 
   const [removing, setRemoving] = useState(false);
 
@@ -171,6 +274,28 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
     navigate(`/settings/geofence/${item.id}`);
   }, [navigate, position, t]);
 
+  const badge = () => {
+    if (!device) return null;
+    if (device.status !== 'online') {
+      return { text: formatStatus(device.status, t), color: getStatusColor(device.status) };
+    }
+    if (position?.attributes?.motion) {
+      return {
+        text: `${t('statusMoving')} (${formatSpeed(position.speed, speedUnit, t)})`,
+        color: 'success',
+      };
+    }
+    return { text: t('statusStopped'), color: 'neutral' };
+  };
+  const statusBadge = badge();
+
+  const otherItems = position
+    ? positionItems
+        .split(',')
+        .filter((key) => key !== 'address')
+        .filter((key) => position.hasOwnProperty(key) || position.attributes.hasOwnProperty(key))
+    : [];
+
   return (
     <>
       <div className={classes.root}>
@@ -181,115 +306,169 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
             dragHandleClassName="draggable-header"
             style={{ position: 'relative' }}
           >
-            <Card elevation={3} className={classes.card}>
-              <CardMedia
-                className={cx('draggable-header', deviceImage && classes.media)}
-                image={deviceImage && `/api/media/${device.uniqueId}/${deviceImage}`}
-              >
-                <div className={classes.header}>
-                  <Typography variant="body2" color="inherit">
-                    {device.name}
-                  </Typography>
-                  <IconButton size="small" color="inherit" onClick={onClose} onTouchStart={onClose}>
-                    <CloseIcon fontSize="small" />
-                  </IconButton>
+            <div className={classes.card}>
+              <div className={cx('draggable-header', classes.header)}>
+                <div className={classes.headerStart}>
+                  <Typography className={classes.name}>{device.name}</Typography>
+                  {statusBadge && (
+                    <Typography
+                      component="span"
+                      className={cx(classes.badge, classes[statusBadge.color])}
+                    >
+                      {statusBadge.text}
+                    </Typography>
+                  )}
                 </div>
-              </CardMedia>
+                <IconButton size="small" onClick={onClose} onTouchStart={onClose}>
+                  <CloseIcon width={20} height={20} />
+                </IconButton>
+              </div>
               {position && (
-                <CardContent className={classes.content}>
-                  <Table size="small" className={classes.table}>
-                    <TableBody>
-                      {positionItems
-                        .split(',')
-                        .filter(
-                          (key) =>
-                            position.hasOwnProperty(key) || position.attributes.hasOwnProperty(key),
-                        )
-                        .map((key) => (
-                          <StatusRow
-                            key={key}
-                            name={positionAttributes[key]?.name || key}
-                            content={
-                              <PositionValue
-                                position={position}
-                                property={position.hasOwnProperty(key) ? key : null}
-                                attribute={position.hasOwnProperty(key) ? null : key}
-                              />
-                            }
-                          />
-                        ))}
-                    </TableBody>
-                    <TableFooter>
-                      <TableRow>
-                        <TableCell colSpan={2} className={classes.cell}>
-                          <Typography variant="body2">
-                            <Link component={RouterLink} to={`/position/${position.id}`}>
-                              {t('sharedShowDetails')}
-                            </Link>
-                          </Typography>
-                        </TableCell>
-                      </TableRow>
-                    </TableFooter>
-                  </Table>
-                </CardContent>
+                <>
+                  <div className={classes.location}>
+                    <div className={classes.locationHeader}>
+                      <Typography className={classes.locationLabel}>
+                        {t('mapCurrentLocation')}
+                      </Typography>
+                      <Typography className={classes.updated}>
+                        {dayjs(position.fixTime).fromNow()}
+                      </Typography>
+                    </div>
+                    <Typography className={classes.address}>
+                      <PositionValue position={position} property="address" />
+                    </Typography>
+                  </div>
+                  {otherItems.length > 0 && (
+                    <div className={classes.grid}>
+                      {otherItems.map((key) => {
+                        const Icon = attributeIcons[key] || AccessTimeIcon;
+                        const rawValue = position.hasOwnProperty(key)
+                          ? position[key]
+                          : position.attributes[key];
+                        const boolColor =
+                          typeof rawValue === 'boolean'
+                            ? rawValue
+                              ? classes.chipIconTrue
+                              : classes.chipIconFalse
+                            : null;
+                        return (
+                          <div key={key} className={classes.chip}>
+                            <Icon
+                              className={cx(classes.chipIcon, boolColor)}
+                              width={16}
+                              height={16}
+                            />
+                            <div className={classes.chipText}>
+                              <span className={classes.chipLabel}>
+                                {positionAttributes[key]?.name || key}
+                              </span>
+                              <span className={classes.chipValue}>
+                                <PositionValue
+                                  position={position}
+                                  property={position.hasOwnProperty(key) ? key : null}
+                                  attribute={position.hasOwnProperty(key) ? null : key}
+                                />
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </>
               )}
-              <CardActions className={classes.actions} disableSpacing>
-                <Tooltip title={t('sharedExtra')}>
-                  <IconButton
-                    color="secondary"
-                    onClick={(e) => setAnchorEl(e.currentTarget)}
+              <div className={classes.actions}>
+                <Tooltip title={t('sharedShowDetails')}>
+                  <button
+                    type="button"
+                    className={cx(classes.action, classes.actionPrimary)}
+                    onClick={() => navigate(`/position/${position.id}`)}
                     disabled={!position}
                   >
-                    <PendingIcon />
-                  </IconButton>
+                    <ListBulletsIcon width={18} height={18} />
+                  </button>
                 </Tooltip>
-                <Tooltip title={t('reportReplay')}>
-                  <IconButton
-                    onClick={() => navigate(`/replay?deviceId=${deviceId}`)}
-                    disabled={disableActions || !position}
+                <Tooltip title={t('sharedCreateGeofence')}>
+                  <button
+                    type="button"
+                    className={classes.action}
+                    onClick={handleGeofence}
+                    disabled={disableActions || !position || readonly}
                   >
-                    <RouteIcon />
-                  </IconButton>
+                    <FenceIcon width={16} height={16} />
+                  </button>
+                </Tooltip>
+                <Tooltip title={t('linkLiveVideo')}>
+                  <button
+                    type="button"
+                    className={classes.action}
+                    onClick={() => navigate(`/stream?deviceId=${deviceId}`)}
+                    disabled={disableActions || !position || position.protocol !== 'jt808'}
+                  >
+                    <PlayCircleIcon width={18} height={18} />
+                  </button>
                 </Tooltip>
                 <Tooltip title={t('commandTitle')}>
-                  <IconButton
+                  <button
+                    type="button"
+                    className={classes.action}
                     onClick={() => navigate(`/settings/device/${deviceId}/command`)}
                     disabled={disableActions}
                   >
-                    <SendIcon />
-                  </IconButton>
+                    <CodeBlockIcon width={18} height={18} />
+                  </button>
                 </Tooltip>
-                <Tooltip title={t('sharedEdit')}>
-                  <IconButton
-                    onClick={() => navigate(`/settings/device/${deviceId}`)}
-                    disabled={disableActions || deviceReadonly}
+                <Tooltip title={t('reportReplay')}>
+                  <button
+                    type="button"
+                    className={classes.action}
+                    onClick={() => navigate(`/replay?deviceId=${deviceId}`)}
+                    disabled={disableActions || !position}
                   >
-                    <EditIcon />
-                  </IconButton>
+                    <ChartBarIcon width={18} height={18} />
+                  </button>
                 </Tooltip>
-                <Tooltip title={t('sharedRemove')}>
-                  <IconButton
-                    color="error"
-                    onClick={() => setRemoving(true)}
-                    disabled={disableActions || deviceReadonly}
+                <Tooltip title={t('sharedExtra')}>
+                  <button
+                    type="button"
+                    className={classes.action}
+                    onClick={(e) => setMapsAnchorEl(e.currentTarget)}
+                    disabled={!position}
                   >
-                    <DeleteIcon />
-                  </IconButton>
+                    <NavigationArrowIcon width={18} height={18} />
+                  </button>
                 </Tooltip>
-              </CardActions>
-            </Card>
+                <Tooltip title={t('sharedShare')}>
+                  <button
+                    type="button"
+                    className={classes.action}
+                    onClick={() => navigate(`/settings/device/${deviceId}/share`)}
+                    disabled={disableActions || shareDisabled || user.temporary}
+                  >
+                    <ShareNetworkIcon width={18} height={18} />
+                  </button>
+                </Tooltip>
+                <Tooltip title={t('sharedManage')}>
+                  <button
+                    type="button"
+                    className={classes.action}
+                    onClick={(e) => setManageAnchorEl(e.currentTarget)}
+                    disabled={disableActions}
+                  >
+                    <PersonArmsSpreadIcon width={18} height={18} />
+                  </button>
+                </Tooltip>
+              </div>
+            </div>
           </Rnd>
         )}
       </div>
       {position && (
-        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
-          <MenuItem
-            onClick={() => navigate(`/stream?deviceId=${deviceId}`)}
-            disabled={position.protocol !== 'jt808'}
-          >
-            {t('linkLiveVideo')}
-          </MenuItem>
-          {!readonly && <MenuItem onClick={handleGeofence}>{t('sharedCreateGeofence')}</MenuItem>}
+        <Menu
+          anchorEl={mapsAnchorEl}
+          open={Boolean(mapsAnchorEl)}
+          onClose={() => setMapsAnchorEl(null)}
+        >
           <MenuItem
             component="a"
             target="_blank"
@@ -322,13 +501,25 @@ const StatusCard = ({ deviceId, position, onClose, disableActions, desktopPaddin
               {navigationAppTitle}
             </MenuItem>
           )}
-          {!shareDisabled && !user.temporary && (
-            <MenuItem onClick={() => navigate(`/settings/device/${deviceId}/share`)}>
-              <Typography color="secondary">{t('sharedShare')}</Typography>
-            </MenuItem>
-          )}
         </Menu>
       )}
+      <Menu
+        anchorEl={manageAnchorEl}
+        open={Boolean(manageAnchorEl)}
+        onClose={() => setManageAnchorEl(null)}
+      >
+        <MenuItem
+          onClick={() => navigate(`/settings/device/${deviceId}`)}
+          disabled={deviceReadonly}
+        >
+          <EditIcon fontSize="small" sx={{ marginInlineEnd: 1 }} />
+          {t('sharedEdit')}
+        </MenuItem>
+        <MenuItem onClick={() => setRemoving(true)} disabled={deviceReadonly}>
+          <DeleteIcon fontSize="small" color="error" sx={{ marginInlineEnd: 1 }} />
+          <Typography color="error">{t('sharedRemove')}</Typography>
+        </MenuItem>
+      </Menu>
       <RemoveDialog
         open={removing}
         endpoint="devices"
