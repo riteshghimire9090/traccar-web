@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   Dialog,
@@ -51,11 +51,17 @@ import { devicesActions } from '../../store';
 import { useAsyncTask, useCatch } from '../../reactHelper';
 import fetchOrThrow from '../util/fetchOrThrow';
 
+const DeviceAnalyticsPanel = lazy(() => import('./DeviceAnalyticsPanel'));
+
 const useStyles = makeStyles()((theme) => ({
   paper: {
-    width: '100%',
-    maxWidth: 1040,
+    width: '90vw',
+    maxWidth: '90vw',
+    height: '85vh',
+    maxHeight: '85vh',
     borderRadius: 16,
+    display: 'flex',
+    flexDirection: 'column',
   },
   header: {
     display: 'flex',
@@ -64,6 +70,7 @@ const useStyles = makeStyles()((theme) => ({
     gap: theme.spacing(2),
     paddingInline: theme.spacing(3),
     borderBottom: `1px solid ${theme.palette.divider}`,
+    flexShrink: 0,
   },
   tabs: {
     minHeight: 52,
@@ -81,7 +88,8 @@ const useStyles = makeStyles()((theme) => ({
     flexDirection: 'column',
     gap: theme.spacing(4),
     padding: theme.spacing(3),
-    maxHeight: '70vh',
+    flex: 1,
+    minHeight: 0,
     overflowY: 'auto',
   },
   placeholder: {
@@ -158,6 +166,7 @@ const useStyles = makeStyles()((theme) => ({
     gap: theme.spacing(1.5),
     padding: theme.spacing(2, 3),
     borderTop: `1px solid ${theme.palette.divider}`,
+    flexShrink: 0,
   },
   expandIcon: {
     transition: 'transform 0.2s',
@@ -212,7 +221,7 @@ const tabKeys = [
   'deviceManageDetails',
   'deviceCommand',
   'deviceManageAlertSetting',
-  'deviceManageMileageMaintenance',
+  'deviceManageAnalytics',
   'deviceManageCustomizedReminders',
   'deviceManageScheduledTaskSetting',
 ];
@@ -284,8 +293,9 @@ const DeviceManageDialog = ({ open, deviceId, onClose }) => {
   const [linkedNotifications, setLinkedNotifications] = useState(null);
   const [notificationTypes, setNotificationTypes] = useState(null);
   const [notificatorTypes, setNotificatorTypes] = useState(null);
-  const [notificationsExpanded, setNotificationsExpanded] = useState(false);
+  const [notificationsExpanded, setNotificationsExpanded] = useState(true);
   const [alertSaving, setAlertSaving] = useState(null);
+  const notificationsFetchedRef = useRef(false);
 
   useEffect(() => {
     if (open && device) {
@@ -298,14 +308,20 @@ const DeviceManageDialog = ({ open, deviceId, onClose }) => {
       setLinkedNotifications(null);
       setNotificationTypes(null);
       setNotificatorTypes(null);
-      setNotificationsExpanded(false);
+      setNotificationsExpanded(true);
       setAlertSaving(null);
+      notificationsFetchedRef.current = false;
     }
-  }, [open, device]);
+    // Deliberately keyed on deviceId, not the live `device` object: the device record
+    // updates on every position/status push, and resetting on each of those would wipe
+    // in-progress edits and re-trigger the Alert Setting tab's data fetch repeatedly.
+    // eslint-disable-next-line @eslint-react/exhaustive-deps
+  }, [open, deviceId]);
 
   useAsyncTask(
     async ({ signal }) => {
-      if (open && tab === 2 && item?.id && notifications === null) {
+      if (open && tab === 2 && item?.id && !notificationsFetchedRef.current) {
+        notificationsFetchedRef.current = true;
         const [allResponse, linkedResponse, typesResponse, notificatorsResponse] =
           await Promise.all([
             fetchOrThrow('/api/notifications', { signal }),
@@ -319,7 +335,7 @@ const DeviceManageDialog = ({ open, deviceId, onClose }) => {
         setNotificatorTypes(await notificatorsResponse.json());
       }
     },
-    [open, tab, item?.id, notifications],
+    [open, tab, item?.id],
   );
 
   const notificatorColumns = (notificatorTypes || []).filter((it) => it.type !== 'command');
@@ -571,7 +587,7 @@ const DeviceManageDialog = ({ open, deviceId, onClose }) => {
           <Tabs
             className={classes.tabs}
             value={tab}
-            onChange={(e, value) => setTab(value)}
+            onChange={(_, value) => setTab(value)}
             variant="scrollable"
             scrollButtons="auto"
           >
@@ -935,6 +951,76 @@ const DeviceManageDialog = ({ open, deviceId, onClose }) => {
           </div>
         ) : tab === 2 ? (
           <div className={classes.content}>
+            {notificationTypes !== null && notificatorTypes !== null && (
+              <div className={classes.section}>
+                <div
+                  className={cx(classes.sectionHeader, classes.sectionHeaderClickable)}
+                  onClick={() => setNotificationsExpanded((prev) => !prev)}
+                >
+                  <Typography variant="subtitle1" className={classes.sectionTitle}>
+                    {t('deviceManageAllNotifications')}
+                  </Typography>
+                  <div className={classes.iconCircle} style={{ backgroundColor: '#fdeee3' }}>
+                    <NotificationsActiveIcon fontSize="small" sx={{ color: '#e08a3b' }} />
+                  </div>
+                  <IconButton size="small">
+                    <ExpandMoreIcon
+                      className={cx(
+                        classes.expandIcon,
+                        notificationsExpanded && classes.expandIconOpen,
+                      )}
+                    />
+                  </IconButton>
+                </div>
+                {notificationsExpanded && (
+                  <div className={classes.tableWrap}>
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell className={classes.typeCell}>
+                            {t('deviceManageNotificationType')}
+                          </TableCell>
+                          {notificatorColumns.map((notificator) => (
+                            <TableCell key={notificator.type} className={classes.channelHeadCell}>
+                              {t(prefixString('notificator', notificator.type))}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {(notificationTypes || []).map((notificationType) => {
+                          const type = notificationType.type;
+                          const channels = notificationChannels(type);
+                          const saving = alertSaving === `type:${type}`;
+                          return (
+                            <TableRow key={type}>
+                              <TableCell className={classes.typeCell}>
+                                {t(prefixString('event', type))}
+                              </TableCell>
+                              {notificatorColumns.map((notificator) => (
+                                <TableCell key={notificator.type} className={classes.channelCell}>
+                                  <Checkbox
+                                    size="small"
+                                    checked={channels.includes(notificator.type)}
+                                    disabled={deviceReadonly || saving}
+                                    onChange={(e) => {
+                                      const next = e.target.checked
+                                        ? [...channels, notificator.type]
+                                        : channels.filter((c) => c !== notificator.type);
+                                      setNotificationChannels(type, next);
+                                    }}
+                                  />
+                                </TableCell>
+                              ))}
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </div>
+            )}
             {notifications === null || linkedNotifications === null ? (
               <Typography className={classes.placeholder}>
                 {t('deviceManageAlertLoading')}
@@ -1000,8 +1086,8 @@ const DeviceManageDialog = ({ open, deviceId, onClose }) => {
                       key={key}
                       classes={classes}
                       label={alertDefinitions[key].label}
-                      tooltip={alertDefinitions[key].tooltip}
-                      checked={isAlertEnabled(alertDefinitions[key])}
+                      tooltip={alertDefinitions[key].tooltip}   
+                      checked={isAlertEnabled(alertDefinitions[key],)}
                       onChange={(checked) => toggleAlert(alertDefinitions[key], checked)}
                       disabled={deviceReadonly || alertSaving === alertDefinitions[key].key}
                     />
@@ -1009,6 +1095,16 @@ const DeviceManageDialog = ({ open, deviceId, onClose }) => {
                 </div>
               </div>
             )}
+          </div>
+        ) : tab === 3 ? (
+          <div className={classes.content}>
+            <Suspense
+              fallback={
+                <Typography className={classes.placeholder}>{t('sharedLoading')}</Typography>
+              }
+            >
+              <DeviceAnalyticsPanel deviceId={item.id} />
+            </Suspense>
           </div>
         ) : (
           <div className={classes.content}>

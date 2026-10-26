@@ -9,12 +9,12 @@ export default defineConfig(() => ({
     port: 3000,
     proxy: {
       '/api/socket': {
-        target: 'wss://gps.precisetechnology.com.np',
+        target: 'ws://localhost:8787',
         ws: true,
         changeOrigin: true,
       },
       '/api': {
-        target: 'https://gps.precisetechnology.com.np',
+        target: 'http://localhost:8787',
         changeOrigin: true,
       },
     },
